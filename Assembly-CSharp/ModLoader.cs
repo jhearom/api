@@ -111,6 +111,8 @@ namespace Modding
             Logger.APILogger.LogDebug($"Loading assemblies and constructing mods");
 
             string mods = Path.Combine(managed_path, "Mods");
+            Directory.CreateDirectory(mods);
+            Logger.APILogger.LogDebug($"Using mods directory `{mods}`");
 
             string[] files = Directory.GetDirectories(mods)
                 .Except(new string[] { Path.Combine(mods, "Disabled") })

@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Modding.Patches
 {
-    [MonoModPatch("global::Language.Language")]
+    [MonoModPatch("global::TeamCherry.Localization.Language")]
     public static class Language
     {
         [MonoModIgnore]

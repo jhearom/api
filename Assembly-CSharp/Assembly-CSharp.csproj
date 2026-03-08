@@ -31,6 +31,7 @@
         <GamePath Condition="'$(OS)' == 'Windows_NT'">C:/Program Files (x86)/Steam/steamapps/common/Hollow Knight</GamePath>
         <GamePath Condition="'$(OS)' != 'Windows_NT'">$(HOME)/.local/share/Steam/steamapps/common/Hollow Knight</GamePath>
         <CopyDir>$(GamePath)/hollow_knight_Data/Managed</CopyDir> 
+        <FrameworkPathOverride Condition="'$(FrameworkPathOverride)' == '' and Exists('../Vanilla/mscorlib.dll')">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)/../Vanilla'))</FrameworkPathOverride>
         
         <Mono Condition="$(OS) == WINDOWS_NT" />
         <Mono Condition="$(OS) != WINDOWS_NT">mono</Mono>
@@ -72,10 +73,8 @@
         <!-- Make the output directory -->
         <MakeDir Directories="$(OutputDir)/" />
 
-        <!-- Copy the API, the documentation, the overridden mscorlib, and the README. -->
+        <!-- Copy the API, the documentation, and the README. -->
         <Copy SourceFiles="../README.ModdingApi.md" DestinationFiles="$(OutputDir)/README.md" />
-        <Copy SourceFiles="../override/mscorlib.dll" DestinationFiles="$(OutputDir)/mscorlib.dll" />
-        <Copy SourceFiles="../override/mscorlib.xml" DestinationFiles="$(OutputDir)/mscorlib.xml" />
         <Copy SourceFiles="$(TargetDir)MONOMODDED_Assembly-CSharp.dll" DestinationFiles="$(OutputDir)/Assembly-CSharp.dll" />
         <Copy SourceFiles="$(TargetDir)Assembly-CSharp.mm.xml" DestinationFiles="$(OutputDir)/Assembly-CSharp.xml" />
         
@@ -146,9 +145,9 @@
             <SpecificVersion>False</SpecificVersion>
         </Reference>
         <Reference Include="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-          <HintPath>..\override\mscorlib.dll</HintPath>
+          <HintPath>../Vanilla/mscorlib.dll</HintPath>
         </Reference>
-        <Reference Include="netstandard, Version=2.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
+        <Reference Include="netstandard, Version=2.1.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
           <HintPath>../Vanilla/netstandard.dll</HintPath>
         </Reference>
         <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=null">
@@ -156,6 +155,14 @@
         </Reference>
         <Reference Include="PlayMaker, Version=1.6.0.0, Culture=neutral, processorArchitecture=MSIL">
             <HintPath>../Vanilla/PlayMaker.dll</HintPath>
+            <SpecificVersion>False</SpecificVersion>
+        </Reference>
+        <Reference Include="TeamCherry.Localization, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+            <HintPath>../Vanilla/TeamCherry.Localization.dll</HintPath>
+            <SpecificVersion>False</SpecificVersion>
+        </Reference>
+        <Reference Include="TeamCherry.TK2D, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+            <HintPath>../Vanilla/TeamCherry.TK2D.dll</HintPath>
             <SpecificVersion>False</SpecificVersion>
         </Reference>
         <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">

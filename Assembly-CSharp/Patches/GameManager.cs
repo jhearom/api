@@ -200,7 +200,7 @@ namespace Modding.Patches
 
                         if (flag)
                         {
-                            string graph = Encryption.Encrypt(text);
+                            string graph = StringEncrypt.EncryptData(text);
                             BinaryFormatter binaryFormatter = new BinaryFormatter();
                             MemoryStream memoryStream = new MemoryStream();
                             binaryFormatter.Serialize(memoryStream, graph);
@@ -361,7 +361,7 @@ namespace Modding.Patches
                             BinaryFormatter binaryFormatter = new BinaryFormatter();
                             MemoryStream serializationStream = new MemoryStream(fileBytes);
                             string encryptedString = (string)binaryFormatter.Deserialize(serializationStream);
-                            json = Encryption.Decrypt(encryptedString);
+                            json = StringEncrypt.DecryptData(encryptedString);
                         }
                         else
                         {
@@ -471,7 +471,7 @@ namespace Modding.Patches
                             BinaryFormatter binaryFormatter = new BinaryFormatter();
                             MemoryStream serializationStream = new MemoryStream(fileBytes);
                             string encryptedString = (string)binaryFormatter.Deserialize(serializationStream);
-                            json = Encryption.Decrypt(encryptedString);
+                            json = StringEncrypt.DecryptData(encryptedString);
                         }
                         else
                         {

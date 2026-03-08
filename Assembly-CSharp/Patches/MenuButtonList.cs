@@ -13,9 +13,6 @@ namespace Modding.Patches
     public class MenuButtonList : global::MenuButtonList
     {
         [MonoModIgnore]
-        private static List<MenuButtonList> menuButtonLists;
-
-        [MonoModIgnore]
         private Entry[] entries;
 
         public void AddSelectable(Selectable sel)
@@ -65,8 +62,7 @@ namespace Modding.Patches
 
         public void RecalculateNavigation()
         {
-            menuButtonLists.Remove(this);
-            Start();
+            SetupActive();
         }
 
         [MonoModIgnore]

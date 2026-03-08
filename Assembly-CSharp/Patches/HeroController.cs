@@ -35,6 +35,9 @@ namespace Modding.Patches
         private bool joniBeam;
 
         [MonoModIgnore]
+        private global::HeroVibrationController vibrationCtrl;
+
+        [MonoModIgnore]
         public NailSlash wallSlash;
 
         [MonoModIgnore]
@@ -638,7 +641,7 @@ namespace Modding.Patches
                     if (this.cState.wallSliding)
                     {
                         this.cState.wallSliding = false;
-                        this.wallSlideVibrationPlayer.Stop();
+                        this.vibrationCtrl.StopWallSlide();
                     }
 
                     if (this.cState.touchingWall)
