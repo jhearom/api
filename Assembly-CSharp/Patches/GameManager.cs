@@ -17,6 +17,9 @@ namespace Modding.Patches
     [MonoModPatch("global::GameManager")]
     public class GameManager : global::GameManager
     {
+        [MonoModIgnore]
+        private static GameManager _instance;
+
         public extern void orig_OnApplicationQuit();
 
         public void OnApplicationQuit()
@@ -43,6 +46,49 @@ namespace Modding.Patches
             info.SceneName = ModHooks.BeforeSceneLoad(info.SceneName);
 
             orig_BeginSceneTransition(info);
+        }
+
+        public static GameManager get_instance()
+        {
+            if (_instance == null)
+            {
+                _instance = UnityEngine.Object.FindObjectOfType<GameManager>();
+
+                if (_instance == null)
+                {
+                    Debug.LogError("Couldn't find a Game Manager, make sure one exists in the scene.");
+                    return null;
+                }
+
+                if (Application.isPlaying)
+                {
+                    Transform root = _instance.transform.root;
+                    UnityEngine.Object.DontDestroyOnLoad(root != null ? root.gameObject : _instance.gameObject);
+                }
+            }
+
+            return _instance;
+        }
+
+        private void Awake()
+        {
+            if (_instance == null)
+            {
+                _instance = this;
+
+                Transform root = transform.root;
+                UnityEngine.Object.DontDestroyOnLoad(root != null ? root.gameObject : gameObject);
+                SetupGameRefs();
+                return;
+            }
+
+            if (_instance != this)
+            {
+                UnityEngine.Object.Destroy(gameObject);
+                return;
+            }
+
+            SetupGameRefs();
         }
 
         public extern void orig_ClearSaveFile(int saveSlot, Action<bool> callback);
