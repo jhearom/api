@@ -265,6 +265,16 @@ namespace Modding.Patches.SuppressPreloadException
                 return;
             }
 
+            if (hudCamera != null && !hudCamera.gameObject.activeSelf)
+                hudCamera.gameObject.SetActive(true);
+
+            Debug.Log(
+                $"[MAPI CAM] GameplayStart " +
+                $"scene={UnityEngine.SceneManagement.SceneManager.GetActiveScene().name} " +
+                $"hudCamera={(hudCamera != null ? hudCamera.name : "<null>")} " +
+                $"hudCameraActive={(hudCamera != null && hudCamera.gameObject != null ? hudCamera.gameObject.activeInHierarchy.ToString() : "<null>")}"
+            );
+
             global::CameraController liveCameraController = ResolveCameraController();
             if (liveCameraController != null)
             {

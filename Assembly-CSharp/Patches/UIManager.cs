@@ -108,9 +108,20 @@ namespace Modding.Patches
                 gameTitle = GameObject.Find("LogoTitle").GetComponent<SpriteRenderer>();
             }
 
-            if (UICanvas.worldCamera == null && SuppressPreloadException.GameCameras.TryGetInstance(out var gameCameras))
+            if (SuppressPreloadException.GameCameras.TryGetInstance(out var gameCameras))
             {
-                UICanvas.worldCamera = gameCameras.mainCamera;
+                if (gm.IsGameplayScene() && gameCameras.hudCamera != null)
+                {
+                    if (!gameCameras.hudCamera.gameObject.activeSelf)
+                        gameCameras.hudCamera.gameObject.SetActive(true);
+
+                    UICanvas.worldCamera = gameCameras.hudCamera;
+                    UICanvas.renderMode = RenderMode.ScreenSpaceCamera;
+                }
+                else if (UICanvas.worldCamera == null)
+                {
+                    UICanvas.worldCamera = gameCameras.mainCamera;
+                }
             }
 
             LogUiSnapshot("SetupRefs");
