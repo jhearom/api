@@ -3,13 +3,16 @@ using MonoMod;
 using UnityEngine;
 
 // ReSharper disable All
-#pragma warning disable 1591, 0108, 0169, 0649, 0414,0626
+#pragma warning disable 1591, 0108, 0169, 0649, 0414, CS0626
 
 namespace Modding.Patches
 {
     [MonoModPatch("global::ObjectPool")]
-    public static class ObjectPool
+    public class ObjectPool
     {
+        [MonoModIgnore]
+        private static ObjectPool _instance;
+
         private static extern GameObject orig_Spawn
         (
             GameObject prefab,
@@ -32,6 +35,7 @@ namespace Modding.Patches
         }
 
         public static extern void orig_CreatePool(GameObject prefab, int initialPoolSize);
+
         public static void CreatePool(GameObject prefab, int initialPoolSize)
         {
             try
@@ -40,6 +44,28 @@ namespace Modding.Patches
             }
             catch (NullReferenceException) when (!ModLoader.LoadState.HasFlag(ModLoader.ModLoadState.Preloaded))
             { }
+        }
+
+        public extern void orig_Awake();
+
+        [MonoModIgnore]
+        public extern Transform get_transform();
+
+        [MonoModIgnore]
+        public extern GameObject get_gameObject();
+
+        public void Awake()
+        {
+            if (_instance == null)
+            {
+                _instance = this;
+
+                Transform root = get_transform().root;
+                UnityEngine.Object.DontDestroyOnLoad(root != null ? root.gameObject : get_gameObject());
+                return;
+            }
+
+            orig_Awake();
         }
     }
 }

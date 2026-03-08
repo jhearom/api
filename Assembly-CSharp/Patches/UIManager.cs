@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using MonoMod;
 using System.Collections;
 using System;
@@ -18,6 +19,9 @@ namespace Modding.Patches
 
         [MonoModIgnore]
         private InputHandler ih;
+
+        [MonoModIgnore]
+        private GraphicRaycaster graphicRaycaster;
 
         public MenuScreen currentDynamicMenu { get; set; }
 
@@ -54,13 +58,27 @@ namespace Modding.Patches
 
         private static Action _editMenus;
 
-        public extern void orig_Awake();
-
         private Sprite LoadImage() => Assembly.GetExecutingAssembly().LoadEmbeddedSprite("Modding.logo.png", pixelsPerUnit: 100f);
 
         public void Awake()
         {
-            orig_Awake();
+            if (_instance == null)
+            {
+                _instance = this;
+
+                if (Application.isPlaying)
+                {
+                    Transform root = transform.root;
+                    UnityEngine.Object.DontDestroyOnLoad(root != null ? root.gameObject : gameObject);
+                }
+            }
+            else if (_instance != this)
+            {
+                UnityEngine.Object.Destroy(gameObject);
+                return;
+            }
+
+            graphicRaycaster = GetComponentInChildren<GraphicRaycaster>();
 
             if (_instance != this) 
                 return;
