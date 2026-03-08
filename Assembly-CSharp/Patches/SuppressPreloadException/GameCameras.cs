@@ -188,6 +188,15 @@ namespace Modding.Patches.SuppressPreloadException
                 uiManager.UICanvas.renderMode = RenderMode.ScreenSpaceCamera;
             }
 
+            Debug.Log(
+                $"[MAPI CAM] MoveMenuToHUDCamera " +
+                $"scene={UnityEngine.SceneManagement.SceneManager.GetActiveScene().name} " +
+                $"mainCamera={(mainCamera != null ? mainCamera.name : "<null>")} " +
+                $"hudCamera={(hudCamera != null ? hudCamera.name : "<null>")} " +
+                $"uiCanvasWorldCamera={(uiManager != null && uiManager.UICanvas != null && uiManager.UICanvas.worldCamera != null ? uiManager.UICanvas.worldCamera.name : "<null>")} " +
+                $"uiCanvasRenderMode={(uiManager != null && uiManager.UICanvas != null ? uiManager.UICanvas.renderMode.ToString() : "<null>")}"
+            );
+
             mainCamera.cullingMask = mainCameraMask ^ 134217728;
             hudCamera.cullingMask = hudCameraMask | 134217728;
         }

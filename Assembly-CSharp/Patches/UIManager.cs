@@ -72,6 +72,25 @@ namespace Modding.Patches
 
         private Sprite LoadImage() => Assembly.GetExecutingAssembly().LoadEmbeddedSprite("Modding.logo.png", pixelsPerUnit: 100f);
 
+        private static string DescribeCamera(Camera camera) =>
+            camera == null ? "<null>" : $"{camera.name}(enabled={camera.enabled},active={camera.gameObject.activeInHierarchy})";
+
+        private static string DescribeCanvas(Canvas canvas) =>
+            canvas == null ? "<null>" : $"renderMode={canvas.renderMode},worldCamera={DescribeCamera(canvas.worldCamera)},enabled={canvas.enabled}";
+
+        private void LogUiSnapshot(string reason)
+        {
+            string modalAlpha = this.modalDimmer != null ? this.modalDimmer.alpha.ToString("0.00") : "<null>";
+            Debug.Log(
+                $"[MAPI UI] {reason} " +
+                $"uiState={this.uiState} menuState={this.menuState} " +
+                $"canvas={DescribeCanvas(UICanvas)} " +
+                $"modalDimmerAlpha={modalAlpha} " +
+                $"gm={(gm != null ? gm.gameObject.name : "<null>")} " +
+                $"hero={(hero_ctrl != null ? hero_ctrl.gameObject.name : "<null>")}"
+            );
+        }
+
         private void SetupRefs()
         {
             gm = GameManager.instance;
@@ -93,6 +112,8 @@ namespace Modding.Patches
             {
                 UICanvas.worldCamera = gameCameras.mainCamera;
             }
+
+            LogUiSnapshot("SetupRefs");
         }
 
         public void Awake()
@@ -149,6 +170,24 @@ namespace Modding.Patches
         private bool hasCalledEditMenus = false;
 
         public extern IEnumerator orig_HideCurrentMenu();
+
+        public extern void orig_UIGoToPauseMenu();
+
+        public void UIGoToPauseMenu()
+        {
+            LogUiSnapshot("Before UIGoToPauseMenu");
+            orig_UIGoToPauseMenu();
+            LogUiSnapshot("After UIGoToPauseMenu");
+        }
+
+        public extern void orig_UIClosePauseMenu();
+
+        public void UIClosePauseMenu()
+        {
+            LogUiSnapshot("Before UIClosePauseMenu");
+            orig_UIClosePauseMenu();
+            LogUiSnapshot("After UIClosePauseMenu");
+        }
         
         public static event Action BeforeHideDynamicMenu;
         public IEnumerator HideCurrentMenu()
