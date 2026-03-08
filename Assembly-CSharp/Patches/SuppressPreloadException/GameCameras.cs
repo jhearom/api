@@ -101,6 +101,47 @@ namespace Modding.Patches.SuppressPreloadException
             return $"{candidate.name} scene={sceneName} loaded={scene.isLoaded} active={candidate.gameObject.activeInHierarchy} score={ScoreCandidate(candidate)} main={(candidate.mainCamera != null)} hud={(candidate.hudCamera != null)} ctrl={(candidate.cameraController != null)} target={(candidate.cameraTarget != null)} fade={(candidate.cameraFadeFSM != null)} soul={(candidate.soulOrbFSM != null)} color={(candidate.sceneColorManager != null)}";
         }
 
+        private global::CameraController ResolveCameraController()
+        {
+            if (cameraController != null)
+                return cameraController;
+
+            global::CameraController resolved = null;
+
+            if (mainCamera != null)
+                resolved = mainCamera.GetComponent<global::CameraController>();
+
+            if (resolved == null && hudCamera != null)
+                resolved = hudCamera.GetComponent<global::CameraController>();
+
+            if (resolved == null)
+                resolved = GetComponentInChildren<global::CameraController>(true);
+
+            if (resolved != null)
+                cameraController = resolved;
+
+            return resolved;
+        }
+
+        private global::CameraTarget ResolveCameraTarget()
+        {
+            if (cameraTarget != null)
+                return cameraTarget;
+
+            global::CameraTarget resolved = null;
+            global::CameraController resolvedCameraController = ResolveCameraController();
+            if (resolvedCameraController != null)
+                resolved = resolvedCameraController.camTarget;
+
+            if (resolved == null)
+                resolved = GetComponentInChildren<global::CameraTarget>(true);
+
+            if (resolved != null)
+                cameraTarget = resolved;
+
+            return resolved;
+        }
+
         public static bool TryGetInstance(out GameCameras instance)
         {
             GameCameras best = null;
@@ -235,10 +276,27 @@ namespace Modding.Patches.SuppressPreloadException
                 return;
             }
 
-            cameraController?.SceneInit();
-            cameraTarget?.SceneInit();
-            sceneColorManager?.SceneInit();
-            get_sceneParticles()?.SceneInit();
+            global::CameraController liveCameraController = ResolveCameraController();
+            if (liveCameraController != null)
+            {
+                liveCameraController.SceneInit();
+            }
+            else
+            {
+                Debug.LogWarning($"GameCameras has no live CameraController during StartScene: {DescribeCandidate(this)}");
+            }
+
+            global::CameraTarget liveCameraTarget = ResolveCameraTarget();
+            if (liveCameraTarget != null)
+                liveCameraTarget.SceneInit();
+
+            var liveSceneColorManager = sceneColorManager;
+            if (liveSceneColorManager != null)
+                liveSceneColorManager.SceneInit();
+
+            var sceneParticles = get_sceneParticles();
+            if (sceneParticles != null)
+                sceneParticles.SceneInit();
 
             if (cameraFadeFSM == null || soulOrbFSM == null)
             {

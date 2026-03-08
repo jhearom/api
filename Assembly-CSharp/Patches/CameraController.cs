@@ -1,6 +1,7 @@
 using System;
 using MonoMod;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 // ReSharper disable All
 #pragma warning disable 1591, 0108, 0169, 0649, 0626, 414, CS0626
@@ -12,6 +13,27 @@ namespace Modding.Patches
     {
         [MonoModIgnore]
         private global::GameManager gm;
+
+        private string DescribeController()
+        {
+            try
+            {
+                if ((UnityEngine.Object)this == null)
+                    return "<destroyed>";
+
+                Scene scene = gameObject.scene;
+                string sceneName = scene.IsValid() ? scene.name : "<invalid>";
+                return $"{name} scene={sceneName} active={gameObject.activeInHierarchy}";
+            }
+            catch (MissingReferenceException)
+            {
+                return "<destroyed>";
+            }
+            catch (NullReferenceException)
+            {
+                return "<invalid>";
+            }
+        }
 
         private static Type ResolveEffectType(params string[] assemblyQualifiedNames)
         {
@@ -27,6 +49,12 @@ namespace Modding.Patches
 
         private bool TrySetEffectEnabled(bool enabled, string displayName, params string[] assemblyQualifiedNames)
         {
+            if ((UnityEngine.Object)this == null)
+            {
+                Debug.LogWarning($"Skipping {displayName} effect configuration because CameraController is no longer valid.");
+                return false;
+            }
+
             Type effectType = ResolveEffectType(assemblyQualifiedNames);
             if (effectType == null)
             {
@@ -34,7 +62,22 @@ namespace Modding.Patches
                 return false;
             }
 
-            Behaviour effect = GetComponent(effectType) as Behaviour;
+            Behaviour effect;
+            try
+            {
+                effect = GetComponent(effectType) as Behaviour;
+            }
+            catch (MissingReferenceException)
+            {
+                Debug.LogWarning($"CameraController became invalid while configuring {displayName}; controller={DescribeController()}");
+                return false;
+            }
+            catch (NullReferenceException)
+            {
+                Debug.LogWarning($"CameraController was not fully bound while configuring {displayName}; controller={DescribeController()}");
+                return false;
+            }
+
             if (effect == null)
             {
                 Debug.LogWarning($"CameraController is missing {displayName}; skipping effect configuration.");
@@ -48,6 +91,12 @@ namespace Modding.Patches
         [MonoModReplace]
         public void ApplyEffectConfiguration(bool isGameplayLevel, bool isBloomForced)
         {
+            if ((UnityEngine.Object)this == null)
+            {
+                Debug.LogWarning("Skipping CameraController.ApplyEffectConfiguration because the controller is no longer valid.");
+                return;
+            }
+
             bool supportsFullEffects = Platform.Current.GraphicsTier > Platform.GraphicsTiers.Low;
             bool hasGameSettings = gm != null && gm.gameSettings != null;
 
@@ -98,6 +147,19 @@ namespace Modding.Patches
                 "DebandEffect",
                 "DebandEffect, Assembly-CSharp"
             );
+        }
+
+        [MonoModReplace]
+        public void FadeSceneIn()
+        {
+            if (Modding.Patches.SuppressPreloadException.GameCameras.TryGetInstance(out var gameCameras) &&
+                gameCameras.cameraFadeFSM != null)
+            {
+                gameCameras.cameraFadeFSM.Fsm.Event("FADE SCENE IN");
+                return;
+            }
+
+            Debug.LogWarning("Skipping CameraController.FadeSceneIn because GameCameras.cameraFadeFSM is not ready.");
         }
     }
 }
