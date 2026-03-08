@@ -153,8 +153,7 @@ namespace Modding.Patches
             playerData = PlayerData.instance;
             sceneData = SceneData.instance;
 
-            SuppressPreloadException.GameCameras.TryGetInstance(out var gameCameras);
-            gameCams = gameCameras;
+            gameCams = SuppressPreloadException.GameCameras.instance;
             set_cameraCtrl(gameCams != null ? gameCams.cameraController : null);
 
             gameSettings = new GameSettings();

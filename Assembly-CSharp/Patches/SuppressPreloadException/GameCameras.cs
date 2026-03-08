@@ -28,6 +28,16 @@ namespace Modding.Patches.SuppressPreloadException
         [MonoModIgnore]
         public extern SceneParticlesController get_sceneParticles();
 
+        private static string DescribeCandidate(GameCameras candidate)
+        {
+            if (candidate == null)
+                return "<null>";
+
+            Scene scene = candidate.gameObject.scene;
+            string sceneName = scene.IsValid() ? scene.name : "<invalid>";
+            return $"{candidate.name} scene={sceneName} loaded={scene.isLoaded} active={candidate.gameObject.activeInHierarchy} main={(candidate.mainCamera != null)} hud={(candidate.hudCamera != null)} ctrl={(candidate.cameraController != null)} target={(candidate.cameraTarget != null)} fade={(candidate.cameraFadeFSM != null)} soul={(candidate.soulOrbFSM != null)} color={(candidate.sceneColorManager != null)}";
+        }
+
         private static bool IsLoadedSceneObject(GameCameras candidate)
         {
             if (candidate == null)
@@ -37,68 +47,22 @@ namespace Modding.Patches.SuppressPreloadException
             return scene.IsValid() && scene.isLoaded;
         }
 
-        private static int ScoreCandidate(GameCameras candidate)
+        private static GameCameras FindLoadedSceneFallback()
         {
-            if (candidate == null)
-                return int.MinValue;
+            GameCameras loadedCandidate = null;
 
-            int score = 0;
-            Scene scene = candidate.gameObject.scene;
+            foreach (GameCameras candidate in Resources.FindObjectsOfTypeAll<GameCameras>())
+            {
+                if (!IsLoadedSceneObject(candidate))
+                    continue;
 
-            if (scene.IsValid())
-                score += scene.isLoaded ? 32 : 4;
-            else
-                score -= 32;
+                if (candidate.gameObject.activeInHierarchy)
+                    return candidate;
 
-            if (candidate.gameObject.activeInHierarchy)
-                score += 16;
+                loadedCandidate ??= candidate;
+            }
 
-            if (candidate.mainCamera != null)
-                score += 8;
-
-            if (candidate.hudCamera != null)
-                score += 8;
-
-            if (candidate.cameraController != null)
-                score += 4;
-
-            if (candidate.cameraTarget != null)
-                score += 4;
-
-            if (candidate.cameraFadeFSM != null)
-                score += 2;
-
-            if (candidate.sceneColorManager != null)
-                score += 1;
-
-            return score;
-        }
-
-        private static void ConsiderCandidate(ref GameCameras best, GameCameras candidate)
-        {
-            if (candidate == null)
-                return;
-
-            if (best == null || ScoreCandidate(candidate) > ScoreCandidate(best))
-                best = candidate;
-        }
-
-        private static void ConsiderLoadedCandidate(ref GameCameras best, GameCameras candidate)
-        {
-            if (!IsLoadedSceneObject(candidate))
-                return;
-
-            ConsiderCandidate(ref best, candidate);
-        }
-
-        private static string DescribeCandidate(GameCameras candidate)
-        {
-            if (candidate == null)
-                return "<null>";
-
-            Scene scene = candidate.gameObject.scene;
-            string sceneName = scene.IsValid() ? scene.name : "<invalid>";
-            return $"{candidate.name} scene={sceneName} loaded={scene.isLoaded} active={candidate.gameObject.activeInHierarchy} score={ScoreCandidate(candidate)} main={(candidate.mainCamera != null)} hud={(candidate.hudCamera != null)} ctrl={(candidate.cameraController != null)} target={(candidate.cameraTarget != null)} fade={(candidate.cameraFadeFSM != null)} soul={(candidate.soulOrbFSM != null)} color={(candidate.sceneColorManager != null)}";
+            return loadedCandidate;
         }
 
         private global::CameraController ResolveCameraController()
@@ -144,17 +108,22 @@ namespace Modding.Patches.SuppressPreloadException
 
         public static bool TryGetInstance(out GameCameras instance)
         {
-            GameCameras best = null;
+            if (GameCameras._instance == null)
+            {
+                GameCameras._instance = UnityEngine.Object.FindObjectOfType<GameCameras>();
+            }
 
-            ConsiderCandidate(ref best, GameCameras._instance);
-            ConsiderCandidate(ref best, UnityEngine.Object.FindObjectOfType<GameCameras>());
-
-            foreach (GameCameras candidate in Resources.FindObjectsOfTypeAll<GameCameras>())
-                ConsiderLoadedCandidate(ref best, candidate);
-
-            GameCameras._instance = best;
+            if (GameCameras._instance == null)
+            {
+                GameCameras._instance = FindLoadedSceneFallback();
+            }
 
             instance = GameCameras._instance;
+            if (instance != null)
+            {
+                UnityEngine.Object.DontDestroyOnLoad(instance.gameObject);
+            }
+
             return instance != null;
         }
 
@@ -173,23 +142,12 @@ namespace Modding.Patches.SuppressPreloadException
 
         public void SceneInit()
         {
-            if (TryGetInstance(out GameCameras instance) && instance != null && instance != this)
-            {
-                instance.StartScene();
-                return;
-            }
-
-            StartScene();
+            if (this == GameCameras._instance)
+                StartScene();
         }
 
         public void MoveMenuToHUDCamera()
         {
-            if (TryGetInstance(out GameCameras instance) && instance != null && instance != this)
-            {
-                instance.MoveMenuToHUDCamera();
-                return;
-            }
-
             if (mainCamera == null || hudCamera == null)
             {
                 Debug.LogWarning("Skipping GameCameras.MoveMenuToHUDCamera because camera refs are not ready.");
@@ -212,12 +170,6 @@ namespace Modding.Patches.SuppressPreloadException
 
         public void StartScene()
         {
-            if (TryGetInstance(out GameCameras instance) && instance != null && instance != this)
-            {
-                instance.StartScene();
-                return;
-            }
-
             if (!init)
                 SetupGameRefs();
 
