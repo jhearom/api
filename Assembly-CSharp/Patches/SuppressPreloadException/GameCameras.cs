@@ -119,11 +119,6 @@ namespace Modding.Patches.SuppressPreloadException
             }
 
             instance = GameCameras._instance;
-            if (instance != null)
-            {
-                UnityEngine.Object.DontDestroyOnLoad(instance.gameObject);
-            }
-
             return instance != null;
         }
 
@@ -144,6 +139,23 @@ namespace Modding.Patches.SuppressPreloadException
         {
             if (this == GameCameras._instance)
                 StartScene();
+        }
+
+        private void Awake()
+        {
+            if (_instance == null)
+            {
+                _instance = this;
+
+                Transform root = transform.root;
+                UnityEngine.Object.DontDestroyOnLoad(root != null ? root.gameObject : gameObject);
+                return;
+            }
+
+            if (_instance != this)
+            {
+                UnityEngine.Object.DestroyImmediate(gameObject);
+            }
         }
 
         public void MoveMenuToHUDCamera()

@@ -20,6 +20,33 @@ namespace Modding.Patches
         [MonoModIgnore]
         private static GameManager _instance;
 
+        private static bool IsLoadedSceneObject(GameManager candidate)
+        {
+            if (candidate == null)
+                return false;
+
+            Scene scene = candidate.gameObject.scene;
+            return scene.IsValid() && scene.isLoaded;
+        }
+
+        private static GameManager FindLoadedSceneFallback()
+        {
+            GameManager loadedCandidate = null;
+
+            foreach (GameManager candidate in Resources.FindObjectsOfTypeAll<GameManager>())
+            {
+                if (!IsLoadedSceneObject(candidate))
+                    continue;
+
+                if (candidate.gameObject.activeInHierarchy)
+                    return candidate;
+
+                loadedCandidate ??= candidate;
+            }
+
+            return loadedCandidate;
+        }
+
         public extern void orig_OnApplicationQuit();
 
         public void OnApplicationQuit()
@@ -56,14 +83,13 @@ namespace Modding.Patches
 
                 if (_instance == null)
                 {
-                    Debug.LogError("Couldn't find a Game Manager, make sure one exists in the scene.");
-                    return null;
+                    _instance = FindLoadedSceneFallback();
                 }
 
-                if (Application.isPlaying)
+                if (_instance == null)
                 {
-                    Transform root = _instance.transform.root;
-                    UnityEngine.Object.DontDestroyOnLoad(root != null ? root.gameObject : _instance.gameObject);
+                    Debug.LogError("Couldn't find a Game Manager, make sure one exists in the scene.");
+                    return null;
                 }
             }
 

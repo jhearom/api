@@ -53,12 +53,6 @@ namespace Modding.Patches
                 {
                     return null;
                 }
-
-                if (Application.isPlaying)
-                {
-                    Transform root = UIManager._instance.transform.root;
-                    UnityEngine.Object.DontDestroyOnLoad(root != null ? root.gameObject : UIManager._instance.gameObject);
-                }
             }
 
             return UIManager._instance;
