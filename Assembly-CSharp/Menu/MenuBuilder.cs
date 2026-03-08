@@ -43,7 +43,7 @@ namespace Modding.Menu
         public MenuBuilder(GameObject canvas, string name)
         {
             this.MenuObject = new GameObject(name);
-            GameObject.DontDestroyOnLoad(this.MenuObject);
+            MenuPersistence.DontDestroyRoot(this.MenuObject);
             this.MenuObject.transform.SetParent(canvas.transform, false);
             this.MenuObject.SetActive(false);
             // MenuScreen
@@ -146,7 +146,7 @@ namespace Modding.Menu
         {
             // Title
             var titleObj = new GameObject("Title");
-            GameObject.DontDestroyOnLoad(titleObj);
+            MenuPersistence.DontDestroyRoot(titleObj);
             titleObj.transform.SetParent(this.MenuObject.transform, false);
             // CanvasRenderer
             titleObj.AddComponent<CanvasRenderer>();
@@ -173,7 +173,7 @@ namespace Modding.Menu
 
             // TopFleur
             var fleur = new GameObject("TopFleur");
-            GameObject.DontDestroyOnLoad(fleur);
+            MenuPersistence.DontDestroyRoot(fleur);
             fleur.transform.SetParent(this.MenuObject.transform, false);
             // CanvasRenderer
             fleur.AddComponent<CanvasRenderer>();
@@ -206,7 +206,7 @@ namespace Modding.Menu
         public MenuBuilder CreateContentPane(RectTransformData style)
         {
             var content = new GameObject("Content");
-            GameObject.DontDestroyOnLoad(content);
+            MenuPersistence.DontDestroyRoot(content);
             content.transform.SetParent(this.MenuObject.transform, false);
             // RectTransform
             style.Apply(content.AddComponent<RectTransform>());
@@ -228,7 +228,7 @@ namespace Modding.Menu
         public MenuBuilder CreateControlPane(RectTransformData style)
         {
             var control = new GameObject("Control");
-            GameObject.DontDestroyOnLoad(control);
+            MenuPersistence.DontDestroyRoot(control);
             control.transform.SetParent(this.MenuObject.transform, false);
             // RectTransform
             style.Apply(control.AddComponent<RectTransform>());

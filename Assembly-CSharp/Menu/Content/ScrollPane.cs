@@ -55,7 +55,7 @@ namespace Modding.Menu
 
             // ScrollMask
             var scrollMask = new GameObject("ScrollMask");
-            GameObject.DontDestroyOnLoad(scrollMask);
+            MenuPersistence.DontDestroyRoot(scrollMask);
             scrollMask.transform.SetParent(content.ContentObject.transform, false);
             // RectTransform
             var scrollMaskRt = scrollMask.AddComponent<RectTransform>();
@@ -75,7 +75,7 @@ namespace Modding.Menu
 
             // Scrolling Pane
             var scrollPane = new GameObject("ScrollingPane");
-            GameObject.DontDestroyOnLoad(scrollPane);
+            MenuPersistence.DontDestroyRoot(scrollPane);
             scrollPane.transform.SetParent(scrollMask.transform, false);
 
             // RectTransform
@@ -147,7 +147,7 @@ namespace Modding.Menu
 
             // Scrollbar
             var scrollbar = new GameObject("Scrollbar");
-            GameObject.DontDestroyOnLoad(scrollbar);
+            MenuPersistence.DontDestroyRoot(scrollbar);
             scrollbar.transform.SetParent(content.ContentObject.transform, false);
             // RectTransform
             var scrollbarRt = scrollbar.AddComponent<RectTransform>();
@@ -168,7 +168,7 @@ namespace Modding.Menu
 
             // Sliding Area
             var slidingArea = new GameObject("Sliding Area");
-            GameObject.DontDestroyOnLoad(slidingArea);
+            MenuPersistence.DontDestroyRoot(slidingArea);
             slidingArea.transform.SetParent(scrollbar.transform, false);
             // RectTransform
             var slidingAreaRt = slidingArea.AddComponent<RectTransform>();
@@ -180,7 +180,7 @@ namespace Modding.Menu
 
             // Handle
             var handle = new GameObject("Handle");
-            GameObject.DontDestroyOnLoad(handle);
+            MenuPersistence.DontDestroyRoot(handle);
             handle.transform.SetParent(slidingArea.transform, false);
             // RectTransform
             var handleRt = handle.AddComponent<RectTransform>();
@@ -196,7 +196,7 @@ namespace Modding.Menu
 
             // TopFleur 
             var handleSprite = new GameObject("TopFleur"); 
-            GameObject.DontDestroyOnLoad(handleSprite);
+            MenuPersistence.DontDestroyRoot(handleSprite);
             handleSprite.transform.SetParent(handle.transform, false);
             // RectTransform
             var handleSpriteRt = handleSprite.AddComponent<RectTransform>();
@@ -217,7 +217,7 @@ namespace Modding.Menu
 
             // Background
             var background = new GameObject("Background");
-            GameObject.DontDestroyOnLoad(background);
+            MenuPersistence.DontDestroyRoot(background);
             background.transform.SetParent(scrollbar.transform, false);
             // RectTransform
             var backgroundRt = background.AddComponent<RectTransform>();

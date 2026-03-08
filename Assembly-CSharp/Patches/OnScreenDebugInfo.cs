@@ -20,7 +20,6 @@ namespace Modding.Patches
                 ModLoader.LoadState = ModLoader.ModLoadState.Started;
 
                 GameObject obj = new GameObject();
-                DontDestroyOnLoad(obj);
 
                 // Preload reflection
                 new Thread(ReflectionHelper.PreloadCommonTypes).Start();

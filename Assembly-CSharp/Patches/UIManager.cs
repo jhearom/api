@@ -34,7 +34,8 @@ namespace Modding.Patches
 
                 if (Application.isPlaying)
                 {
-                    UnityEngine.Object.DontDestroyOnLoad(UIManager._instance.gameObject);
+                    Transform root = UIManager._instance.transform.root;
+                    UnityEngine.Object.DontDestroyOnLoad(root != null ? root.gameObject : UIManager._instance.gameObject);
                 }
             }
 

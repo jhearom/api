@@ -44,7 +44,7 @@ namespace Modding.Menu
 
             // Option object
             var option = new GameObject($"{name}");
-            GameObject.DontDestroyOnLoad(option);
+            MenuPersistence.DontDestroyRoot(option);
             option.transform.SetParent(content.ContentObject.transform, false);
             // CanvasRenderer
             option.AddComponent<CanvasRenderer>();
@@ -65,7 +65,7 @@ namespace Modding.Menu
 
             // Label object
             var label = new GameObject("Label");
-            GameObject.DontDestroyOnLoad(label);
+            MenuPersistence.DontDestroyRoot(label);
             label.transform.SetParent(option.transform, false);
             // CanvasRenderer
             label.AddComponent<CanvasRenderer>();
@@ -94,7 +94,7 @@ namespace Modding.Menu
 
             // LeftCursor object
             var cursorL = new GameObject("CursorLeft");
-            GameObject.DontDestroyOnLoad(cursorL);
+            MenuPersistence.DontDestroyRoot(cursorL);
             cursorL.transform.SetParent(label.transform, false);
             // CanvasRenderer
             cursorL.AddComponent<CanvasRenderer>();
@@ -118,7 +118,7 @@ namespace Modding.Menu
 
             // RightCursor object
             var cursorR = new GameObject("CursorRight");
-            GameObject.DontDestroyOnLoad(cursorR);
+            MenuPersistence.DontDestroyRoot(cursorR);
             cursorR.transform.SetParent(label.transform, false);
             // CanvasRenderer
             cursorR.AddComponent<CanvasRenderer>();
@@ -142,7 +142,7 @@ namespace Modding.Menu
 
             // FlashEffect object
             var flash = new GameObject("FlashEffect");
-            GameObject.DontDestroyOnLoad(flash);
+            MenuPersistence.DontDestroyRoot(flash);
             flash.transform.SetParent(label.transform, false);
             // CanvasRenderer
             flash.AddComponent<CanvasRenderer>();
@@ -169,7 +169,7 @@ namespace Modding.Menu
                 var descStyle = descInfo.Style ?? DescriptionStyle.MenuButtonSingleLineVanillaStyle;
 
                 var description = new GameObject("Description");
-                GameObject.DontDestroyOnLoad(description);
+                MenuPersistence.DontDestroyRoot(description);
                 description.transform.SetParent(option.transform, false);
                 // CanvasRenderer
                 description.AddComponent<CanvasRenderer>();

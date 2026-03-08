@@ -23,10 +23,6 @@ namespace Modding.Patches.SuppressPreloadException
                     {
                         Debug.LogError("Couldn't find GameCameras, make sure one exists in the scene.");
                     }
-                    else
-                    {
-                        UnityEngine.Object.DontDestroyOnLoad(GameCameras._instance.gameObject);
-                    }
                 }
                 return GameCameras._instance;
             }

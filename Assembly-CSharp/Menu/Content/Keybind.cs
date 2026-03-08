@@ -48,7 +48,7 @@ namespace Modding.Menu
             var style = config.Style ?? KeybindStyle.VanillaStyle;
             // Keybind object
             var keybind = new GameObject($"{name}");
-            GameObject.DontDestroyOnLoad(keybind);
+            MenuPersistence.DontDestroyRoot(keybind);
             keybind.transform.SetParent(content.ContentObject.transform, false);
             // CanvasRenderer
             keybind.AddComponent<CanvasRenderer>();
@@ -70,7 +70,7 @@ namespace Modding.Menu
 
             // Text object
             var text = new GameObject("Text");
-            GameObject.DontDestroyOnLoad(text);
+            MenuPersistence.DontDestroyRoot(text);
             text.transform.SetParent(keybind.transform, false);
             // CanvasRenderer
             text.AddComponent<CanvasRenderer>();
@@ -96,7 +96,7 @@ namespace Modding.Menu
 
             // LeftCursor object
             var cursorL = new GameObject("CursorLeft");
-            GameObject.DontDestroyOnLoad(cursorL);
+            MenuPersistence.DontDestroyRoot(cursorL);
             cursorL.transform.SetParent(keybind.transform, false);
             // CanvasRenderer
             cursorL.AddComponent<CanvasRenderer>();
@@ -120,7 +120,7 @@ namespace Modding.Menu
 
             // RightCursor object
             var cursorR = new GameObject("CursorRight");
-            GameObject.DontDestroyOnLoad(cursorR);
+            MenuPersistence.DontDestroyRoot(cursorR);
             cursorR.transform.SetParent(keybind.transform, false);
             // CanvasRenderer
             cursorR.AddComponent<CanvasRenderer>();
@@ -144,7 +144,7 @@ namespace Modding.Menu
 
             // Keymap object
             var keymap = new GameObject("Keymap");
-            GameObject.DontDestroyOnLoad(keymap);
+            MenuPersistence.DontDestroyRoot(keymap);
             keymap.transform.SetParent(keybind.transform, false);
             // CanvasRenderer
             keymap.AddComponent<CanvasRenderer>();
@@ -162,7 +162,7 @@ namespace Modding.Menu
 
             // Keymap Text object
             var keymapText = new GameObject("Text");
-            GameObject.DontDestroyOnLoad(keymapText);
+            MenuPersistence.DontDestroyRoot(keymapText);
             keymapText.transform.SetParent(keymap.transform, false);
             // CanvasRenderer
             keymapText.AddComponent<CanvasRenderer>();
@@ -205,7 +205,7 @@ namespace Modding.Menu
             var style = config.Style ?? KeybindStyle.VanillaStyle;
             // buttonBind object
             var buttonBind = new GameObject($"{name}");
-            GameObject.DontDestroyOnLoad(buttonBind);
+            MenuPersistence.DontDestroyRoot(buttonBind);
             buttonBind.transform.SetParent(content.ContentObject.transform, false);
             // CanvasRenderer
             buttonBind.AddComponent<CanvasRenderer>();
@@ -227,7 +227,7 @@ namespace Modding.Menu
 
             // Text object
             var text = new GameObject("Text");
-            GameObject.DontDestroyOnLoad(text);
+            MenuPersistence.DontDestroyRoot(text);
             text.transform.SetParent(buttonBind.transform, false);
             // CanvasRenderer
             text.AddComponent<CanvasRenderer>();
@@ -253,7 +253,7 @@ namespace Modding.Menu
 
             // LeftCursor object
             var cursorL = new GameObject("CursorLeft");
-            GameObject.DontDestroyOnLoad(cursorL);
+            MenuPersistence.DontDestroyRoot(cursorL);
             cursorL.transform.SetParent(buttonBind.transform, false);
             // CanvasRenderer
             cursorL.AddComponent<CanvasRenderer>();
@@ -277,7 +277,7 @@ namespace Modding.Menu
 
             // RightCursor object
             var cursorR = new GameObject("CursorRight");
-            GameObject.DontDestroyOnLoad(cursorR);
+            MenuPersistence.DontDestroyRoot(cursorR);
             cursorR.transform.SetParent(buttonBind.transform, false);
             // CanvasRenderer
             cursorR.AddComponent<CanvasRenderer>();
@@ -301,7 +301,7 @@ namespace Modding.Menu
 
             // Keymap object
             var keymap = new GameObject("Keymap");
-            GameObject.DontDestroyOnLoad(keymap);
+            MenuPersistence.DontDestroyRoot(keymap);
             keymap.transform.SetParent(buttonBind.transform, false);
             // CanvasRenderer
             keymap.AddComponent<CanvasRenderer>();
@@ -319,7 +319,7 @@ namespace Modding.Menu
 
             // Keymap Text object
             var buttonmapText = new GameObject("Text");
-            GameObject.DontDestroyOnLoad(buttonmapText);
+            MenuPersistence.DontDestroyRoot(buttonmapText);
             buttonmapText.transform.SetParent(keymap.transform, false);
             // CanvasRenderer
             buttonmapText.AddComponent<CanvasRenderer>();
@@ -339,7 +339,7 @@ namespace Modding.Menu
             buttonmapText.AddComponent<FixVerticalAlign>().labelFixType = FixVerticalAlign.LabelFixType.KeyMap;
             // FakeThrobber to calm NREs
             var throbber = new GameObject("throbber");
-            GameObject.DontDestroyOnLoad(throbber);
+            MenuPersistence.DontDestroyRoot(throbber);
             throbber.transform.SetParent(keymap.transform, false);
             mapButton.listeningThrobber = throbber.AddComponent<Throbber>();
             ReflectionHelper.SetField( mapButton.listeningThrobber,"sprites",new Sprite[0]);

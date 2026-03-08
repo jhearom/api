@@ -26,7 +26,7 @@ namespace Modding.Menu
         )
         {
             var go = new GameObject(name);
-            GameObject.DontDestroyOnLoad(go);
+            MenuPersistence.DontDestroyRoot(go);
             go.transform.SetParent(content.ContentObject.transform, false);
             // RectTransform
             var rt = go.AddComponent<RectTransform>();
@@ -165,7 +165,7 @@ namespace Modding.Menu
         {
             // Wrapper
             wrapper = new GameObject(name);
-            GameObject.DontDestroyOnLoad(wrapper);
+            MenuPersistence.DontDestroyRoot(wrapper);
             wrapper.transform.SetParent(content.ContentObject.transform, false);
             // RectTransform
             var wrapperRt = wrapper.AddComponent<RectTransform>();

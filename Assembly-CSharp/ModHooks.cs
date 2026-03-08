@@ -76,8 +76,8 @@ namespace Modding
                 Logger.APILogger.LogError("Failed obtaining game version:\n" + e);
             }
 
-            // ReSharper disable once Unity.IncorrectScriptableObjectInstantiation idk it works
-            version = new GameVersionData { gameVersion = gameVersion };
+            version = ScriptableObject.CreateInstance<GameVersionData>();
+            version.gameVersion = gameVersion;
 
             ModVersion = version.GetGameVersionString() + "-" + _modVersion;
 
