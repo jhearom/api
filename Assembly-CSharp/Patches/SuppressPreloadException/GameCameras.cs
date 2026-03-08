@@ -178,6 +178,9 @@ namespace Modding.Patches.SuppressPreloadException
                 return;
             }
 
+            if (!hudCamera.gameObject.activeSelf)
+                hudCamera.gameObject.SetActive(true);
+
             int mainCameraMask = mainCamera.cullingMask;
             int hudCameraMask = hudCamera.cullingMask;
 
@@ -193,6 +196,7 @@ namespace Modding.Patches.SuppressPreloadException
                 $"scene={UnityEngine.SceneManagement.SceneManager.GetActiveScene().name} " +
                 $"mainCamera={(mainCamera != null ? mainCamera.name : "<null>")} " +
                 $"hudCamera={(hudCamera != null ? hudCamera.name : "<null>")} " +
+                $"hudCameraActive={(hudCamera != null && hudCamera.gameObject != null ? hudCamera.gameObject.activeInHierarchy.ToString() : "<null>")} " +
                 $"uiCanvasWorldCamera={(uiManager != null && uiManager.UICanvas != null && uiManager.UICanvas.worldCamera != null ? uiManager.UICanvas.worldCamera.name : "<null>")} " +
                 $"uiCanvasRenderMode={(uiManager != null && uiManager.UICanvas != null ? uiManager.UICanvas.renderMode.ToString() : "<null>")}"
             );

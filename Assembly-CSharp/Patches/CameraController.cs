@@ -161,5 +161,27 @@ namespace Modding.Patches
 
             Debug.LogWarning("Skipping CameraController.FadeSceneIn because GameCameras.cameraFadeFSM is not ready.");
         }
+
+        public extern void orig_ReleaseLock(global::CameraLockArea lockarea);
+
+        public void ReleaseLock(global::CameraLockArea lockarea)
+        {
+            try
+            {
+                orig_ReleaseLock(lockarea);
+            }
+            catch (MissingReferenceException)
+            {
+                Debug.LogWarning(
+                    $"Skipping CameraController.ReleaseLock because camera lock refs became invalid. controller={DescribeController()} lockarea={(lockarea != null ? lockarea.name : "<null>")}"
+                );
+            }
+            catch (NullReferenceException)
+            {
+                Debug.LogWarning(
+                    $"Skipping CameraController.ReleaseLock because camera lock refs were incomplete. controller={DescribeController()} lockarea={(lockarea != null ? lockarea.name : "<null>")}"
+                );
+            }
+        }
     }
 }
