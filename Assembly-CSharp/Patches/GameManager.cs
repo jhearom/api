@@ -276,13 +276,20 @@ namespace Modding.Patches
 
             if (IsGameplayScene())
             {
-                GameObject go = GameCameras.instance.soulOrbFSM.gameObject.transform.Find("SoulOrb_fill").gameObject;
-                GameObject liquid = go.transform.Find("Liquid").gameObject;
-                tk2dSpriteAnimator tk2dsa = liquid.GetComponent<tk2dSpriteAnimator>();
-                tk2dsa.GetClipByName("Fill").fps = 15 * 1.05f;
-                tk2dsa.GetClipByName("Idle").fps = 10 * 1.05f;
-                tk2dsa.GetClipByName("Shrink").fps = 15 * 1.05f;
-                tk2dsa.GetClipByName("Drain").fps = 30 * 1.05f;
+                if (SuppressPreloadException.GameCameras.TryGetInstance(out var gameCameras) && gameCameras.soulOrbFSM != null)
+                {
+                    Transform fill = gameCameras.soulOrbFSM.gameObject.transform.Find("SoulOrb_fill");
+                    Transform liquid = fill != null ? fill.Find("Liquid") : null;
+                    tk2dSpriteAnimator tk2dsa = liquid != null ? liquid.GetComponent<tk2dSpriteAnimator>() : null;
+
+                    if (tk2dsa != null)
+                    {
+                        tk2dsa.GetClipByName("Fill").fps = 15 * 1.05f;
+                        tk2dsa.GetClipByName("Idle").fps = 10 * 1.05f;
+                        tk2dsa.GetClipByName("Shrink").fps = 15 * 1.05f;
+                        tk2dsa.GetClipByName("Drain").fps = 30 * 1.05f;
+                    }
+                }
             }
 
         }

@@ -33,8 +33,7 @@ namespace Modding.Patches
 
         private IEnumerator Start()
         {
-            this.gcams = SuppressPreloadException.GameCameras.instance;
-            if (this.gcams == null)
+            if (!SuppressPreloadException.GameCameras.TryGetInstance(out this.gcams))
                 yield break;
             this.cameraCtrl = this.gcams.cameraController;
             this.camTarget = this.gcams.cameraTarget;

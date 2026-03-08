@@ -253,7 +253,10 @@ namespace Modding.Patches
             int mpreserve = this.playerData.GetInt("MPReserve");
             num = Modding.ModHooks.OnSoulGain(num);
             this.playerData.AddMPCharge(num);
-            GameCameras.instance.soulOrbFSM.SendEvent("MP GAIN");
+            if (Modding.Patches.SuppressPreloadException.GameCameras.TryGetInstance(out var gameCameras) && gameCameras.soulOrbFSM != null)
+            {
+                gameCameras.soulOrbFSM.SendEvent("MP GAIN");
+            }
             if (this.playerData.GetInt("MPReserve") != mpreserve)
             {
                 this.gm.soulVessel_fsm.SendEvent("MP RESERVE UP");

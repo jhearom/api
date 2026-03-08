@@ -12,19 +12,27 @@ namespace Modding.Patches.SuppressPreloadException
         [MonoModIgnore]
         private static GameCameras _instance;
 
+        public static bool TryGetInstance(out GameCameras instance)
+        {
+            if (GameCameras._instance == null)
+            {
+                GameCameras._instance = UnityEngine.Object.FindObjectOfType<GameCameras>();
+            }
+
+            instance = GameCameras._instance;
+            return instance != null;
+        }
+
         public static GameCameras instance
         {
             get
             {
-                if (GameCameras._instance == null)
+                if (!TryGetInstance(out GameCameras instance))
                 {
-                    GameCameras._instance = UnityEngine.Object.FindObjectOfType<GameCameras>();
-                    if (GameCameras._instance == null)
-                    {
-                        Debug.LogError("Couldn't find GameCameras, make sure one exists in the scene.");
-                    }
+                    Debug.LogError("Couldn't find GameCameras, make sure one exists in the scene.");
                 }
-                return GameCameras._instance;
+
+                return instance;
             }
         }
     }
