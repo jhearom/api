@@ -110,7 +110,7 @@ namespace Modding.Patches
         private extern void HideSaveIcon();
 
         [MonoModIgnore]
-        private extern void set_cameraCtrl(CameraController value);
+        private extern void set_cameraCtrl(global::CameraController value);
 
         [MonoModIgnore]
         private extern void set_inputHandler(InputHandler value);

@@ -15,7 +15,7 @@ namespace Modding.Patches
         [MonoModIgnore]
         private SuppressPreloadException.GameCameras gcams;
         [MonoModIgnore]
-        private CameraController cameraCtrl;
+        private global::CameraController cameraCtrl;
         [MonoModIgnore]
         private CameraTarget camTarget;
         [MonoModIgnore]

@@ -91,20 +91,27 @@ namespace Modding.Patches.SuppressPreloadException
             ConsiderCandidate(ref best, candidate);
         }
 
+        private static string DescribeCandidate(GameCameras candidate)
+        {
+            if (candidate == null)
+                return "<null>";
+
+            Scene scene = candidate.gameObject.scene;
+            string sceneName = scene.IsValid() ? scene.name : "<invalid>";
+            return $"{candidate.name} scene={sceneName} loaded={scene.isLoaded} active={candidate.gameObject.activeInHierarchy} score={ScoreCandidate(candidate)} main={(candidate.mainCamera != null)} hud={(candidate.hudCamera != null)} ctrl={(candidate.cameraController != null)} target={(candidate.cameraTarget != null)} fade={(candidate.cameraFadeFSM != null)} soul={(candidate.soulOrbFSM != null)} color={(candidate.sceneColorManager != null)}";
+        }
+
         public static bool TryGetInstance(out GameCameras instance)
         {
-            if (ScoreCandidate(GameCameras._instance) < 24)
-            {
-                GameCameras best = null;
+            GameCameras best = null;
 
-                ConsiderCandidate(ref best, GameCameras._instance);
-                ConsiderCandidate(ref best, UnityEngine.Object.FindObjectOfType<GameCameras>());
+            ConsiderCandidate(ref best, GameCameras._instance);
+            ConsiderCandidate(ref best, UnityEngine.Object.FindObjectOfType<GameCameras>());
 
-                foreach (GameCameras candidate in Resources.FindObjectsOfTypeAll<GameCameras>())
-                    ConsiderLoadedCandidate(ref best, candidate);
+            foreach (GameCameras candidate in Resources.FindObjectsOfTypeAll<GameCameras>())
+                ConsiderLoadedCandidate(ref best, candidate);
 
-                GameCameras._instance = best;
-            }
+            GameCameras._instance = best;
 
             instance = GameCameras._instance;
             return instance != null;
@@ -116,7 +123,7 @@ namespace Modding.Patches.SuppressPreloadException
             {
                 if (!TryGetInstance(out GameCameras instance))
                 {
-                    Debug.LogError("Couldn't find GameCameras, make sure one exists in the scene.");
+                    Debug.LogError($"Couldn't find GameCameras, make sure one exists in the scene. Active scene={UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}");
                 }
 
                 return instance;
@@ -232,6 +239,11 @@ namespace Modding.Patches.SuppressPreloadException
             cameraTarget?.SceneInit();
             sceneColorManager?.SceneInit();
             get_sceneParticles()?.SceneInit();
+
+            if (cameraFadeFSM == null || soulOrbFSM == null)
+            {
+                Debug.LogWarning($"GameCameras incomplete after StartScene: {DescribeCandidate(this)}");
+            }
         }
     }
 }
