@@ -37,6 +37,49 @@
         <Mono Condition="$(OS) != WINDOWS_NT">mono</Mono>
     </PropertyGroup>
 
+    <PropertyGroup>
+        <BuildInfoFile>$(IntermediateOutputPath)BuildInfo.g.cs</BuildInfoFile>
+        <GitBranch>unknown</GitBranch>
+        <GitCommit>unknown</GitCommit>
+    </PropertyGroup>
+
+    <Target Name="GenerateBuildInfo" BeforeTargets="BeforeBuild">
+        <Exec Command="git rev-parse --abbrev-ref HEAD" ConsoleToMSBuild="true" IgnoreExitCode="true">
+            <Output TaskParameter="ConsoleOutput" PropertyName="GitBranchRaw" />
+        </Exec>
+        <Exec Command="git rev-parse --short HEAD" ConsoleToMSBuild="true" IgnoreExitCode="true">
+            <Output TaskParameter="ConsoleOutput" PropertyName="GitCommitRaw" />
+        </Exec>
+
+        <PropertyGroup>
+            <GitBranch Condition="'$(GitBranchRaw)' != ''">$([System.String]::Copy('$(GitBranchRaw)').Trim())</GitBranch>
+            <GitCommit Condition="'$(GitCommitRaw)' != ''">$([System.String]::Copy('$(GitCommitRaw)').Trim())</GitCommit>
+        </PropertyGroup>
+
+        <ItemGroup>
+            <BuildInfoLine Include="buildinfo-1">
+                <Text>namespace Modding { internal static class BuildInfo {</Text>
+            </BuildInfoLine>
+            <BuildInfoLine Include="buildinfo-2">
+                <Text>internal const string Branch = "$(GitBranch)";</Text>
+            </BuildInfoLine>
+            <BuildInfoLine Include="buildinfo-3">
+                <Text>internal const string Commit = "$(GitCommit)";</Text>
+            </BuildInfoLine>
+            <BuildInfoLine Include="buildinfo-4">
+                <Text>internal static string Describe() =&gt; $"branch={Branch} commit={Commit}";</Text>
+            </BuildInfoLine>
+            <BuildInfoLine Include="buildinfo-5">
+                <Text>} }</Text>
+            </BuildInfoLine>
+        </ItemGroup>
+
+        <WriteLinesToFile
+            File="$(BuildInfoFile)"
+            Overwrite="true"
+            Lines="@(BuildInfoLine->'%(Text)')" />
+    </Target>
+
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">
         <Delete Condition="Exists('$(OutputDir)')" Files="$(OutputDir)" />
 

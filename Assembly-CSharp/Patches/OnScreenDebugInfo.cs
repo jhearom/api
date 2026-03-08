@@ -16,7 +16,14 @@ namespace Modding.Patches
         {
             if (ModLoader.LoadState == ModLoader.ModLoadState.NotStarted)
             {
+                Debug.Log(
+                    $"[MAPI BUILD] {BuildInfo.Describe()} " +
+                    $"dataPath={Application.dataPath} " +
+                    $"persistentDataPath={Application.persistentDataPath} " +
+                    $"osFamily={SystemInfo.operatingSystemFamily}"
+                );
                 Logger.APILogger.Log("Main menu loading");
+                Logger.APILogger.Log($"Build {BuildInfo.Describe()}");
                 ModLoader.LoadState = ModLoader.ModLoadState.Started;
 
                 GameObject obj = new GameObject();
