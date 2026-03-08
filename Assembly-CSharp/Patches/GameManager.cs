@@ -71,6 +71,24 @@ namespace Modding.Patches
         private GameCameras gameCams;
 
         [MonoModIgnore]
+        private InControl.InControlManager inControlManagerPrefab;
+
+        [MonoModIgnore]
+        private static InControl.InControlManager _spawnedInControlManager;
+
+        [MonoModIgnore]
+        public global::GameSettings gameSettings;
+
+        [MonoModIgnore]
+        public PlayMakerFSM inventoryFSM;
+
+        [MonoModIgnore]
+        public global::PlayerData playerData;
+
+        [MonoModIgnore]
+        public global::SceneData sceneData;
+
+        [MonoModIgnore]
         private float sessionPlayTimer;
 
         [MonoModIgnore]
@@ -91,6 +109,27 @@ namespace Modding.Patches
         [MonoModIgnore]
         private extern void HideSaveIcon();
 
+        [MonoModIgnore]
+        private extern void set_cameraCtrl(CameraController value);
+
+        [MonoModIgnore]
+        private extern void set_inputHandler(InputHandler value);
+
+        [MonoModIgnore]
+        private extern InputHandler get_inputHandler();
+
+        [MonoModIgnore]
+        private extern void set_achievementHandler(AchievementHandler value);
+
+        [MonoModIgnore]
+        private extern AchievementHandler get_achievementHandler();
+
+        [MonoModIgnore]
+        private extern void LevelActivated(Scene current, Scene next);
+
+        [MonoModIgnore]
+        private extern void add_NextSceneWillActivate(Action value);
+
         private static string ModdedSavePath(int slot) => Path.Combine(
             Application.persistentDataPath,
             $"user{slot}.modded.json"
@@ -106,6 +145,68 @@ namespace Modding.Patches
                 return _uiInstance;
             }
             private set => _uiInstance = value;
+        }
+
+        [MonoModReplace]
+        private void SetupGameRefs()
+        {
+            playerData = PlayerData.instance;
+            sceneData = SceneData.instance;
+
+            SuppressPreloadException.GameCameras.TryGetInstance(out var gameCameras);
+            gameCams = gameCameras;
+            set_cameraCtrl(gameCams != null ? gameCams.cameraController : null);
+
+            gameSettings = new GameSettings();
+            set_inputHandler(GetComponent<InputHandler>());
+            set_achievementHandler(GetComponent<AchievementHandler>());
+
+            if (_spawnedInControlManager == null)
+            {
+                _spawnedInControlManager = UnityEngine.Object.Instantiate(inControlManagerPrefab);
+                UnityEngine.Object.DontDestroyOnLoad(_spawnedInControlManager);
+            }
+
+            inventoryFSM = null;
+
+            if (gameCams != null)
+            {
+                Transform hudCamera = gameCams.gameObject.transform.Find("HudCamera");
+                Transform inventory = hudCamera != null ? hudCamera.Find("Inventory") : null;
+                if (inventory != null)
+                {
+                    inventoryFSM = inventory.gameObject.GetComponent<PlayMakerFSM>();
+                }
+                else
+                {
+                    Debug.LogWarning("Couldn't find Inventory FSM under GameCameras/HudCamera/Inventory during SetupGameRefs.");
+                }
+            }
+            else
+            {
+                Debug.LogWarning("GameCameras not ready during GameManager.SetupGameRefs; camera refs will be resolved later.");
+            }
+
+            if (AchievementPopupHandler.Instance)
+            {
+                AchievementPopupHandler.Instance.Setup(get_achievementHandler());
+            }
+
+            Platform.Current.AdjustGraphicsSettings(gameSettings);
+
+            if (get_inputHandler() == null)
+            {
+                Debug.LogError("Couldn't find InputHandler component.");
+            }
+
+            if (get_achievementHandler() == null)
+            {
+                Debug.LogError("Couldn't find AchievementHandler component.");
+            }
+
+            UnityEngine.SceneManagement.SceneManager.activeSceneChanged += LevelActivated;
+            Platform.Current.SetDisengageHandler(this);
+            add_NextSceneWillActivate(ResetDynamicHierarchy.ForceReconnectAll);
         }
 
         [MonoModReplace]

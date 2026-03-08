@@ -39,10 +39,16 @@ namespace Modding.Patches.SuppressPreloadException
 
         private static int ScoreCandidate(GameCameras candidate)
         {
-            if (!IsLoadedSceneObject(candidate))
+            if (candidate == null)
                 return int.MinValue;
 
             int score = 0;
+            Scene scene = candidate.gameObject.scene;
+
+            if (scene.IsValid())
+                score += scene.isLoaded ? 32 : 4;
+            else
+                score -= 32;
 
             if (candidate.gameObject.activeInHierarchy)
                 score += 16;
@@ -70,11 +76,19 @@ namespace Modding.Patches.SuppressPreloadException
 
         private static void ConsiderCandidate(ref GameCameras best, GameCameras candidate)
         {
-            if (!IsLoadedSceneObject(candidate))
+            if (candidate == null)
                 return;
 
             if (best == null || ScoreCandidate(candidate) > ScoreCandidate(best))
                 best = candidate;
+        }
+
+        private static void ConsiderLoadedCandidate(ref GameCameras best, GameCameras candidate)
+        {
+            if (!IsLoadedSceneObject(candidate))
+                return;
+
+            ConsiderCandidate(ref best, candidate);
         }
 
         public static bool TryGetInstance(out GameCameras instance)
@@ -87,7 +101,7 @@ namespace Modding.Patches.SuppressPreloadException
                 ConsiderCandidate(ref best, UnityEngine.Object.FindObjectOfType<GameCameras>());
 
                 foreach (GameCameras candidate in Resources.FindObjectsOfTypeAll<GameCameras>())
-                    ConsiderCandidate(ref best, candidate);
+                    ConsiderLoadedCandidate(ref best, candidate);
 
                 GameCameras._instance = best;
             }
