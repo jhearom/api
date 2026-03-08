@@ -258,6 +258,12 @@ paket-files/
 .idea/
 *.sln.iml
 
+# Codex local state
+.codex/
+
+# Local game managed input
+Vanilla
+
 # CodeRush
 .cr/
 
