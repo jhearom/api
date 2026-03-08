@@ -145,7 +145,8 @@ namespace Modding.Patches.SuppressPreloadException
             instance = GameCameras._instance;
             if (instance != null)
             {
-                UnityEngine.Object.DontDestroyOnLoad(instance.gameObject);
+                Transform root = instance.transform.root;
+                UnityEngine.Object.DontDestroyOnLoad(root != null ? root.gameObject : instance.gameObject);
             }
 
             return instance != null;

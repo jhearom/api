@@ -29,10 +29,26 @@ namespace Modding.Patches
             return scene.IsValid();
         }
 
+        private static string DescribeCandidate(GameManager candidate)
+        {
+            if (candidate == null)
+                return "<null>";
+
+            Scene scene = candidate.gameObject.scene;
+            string sceneName = scene.IsValid() ? scene.name : "<invalid>";
+            return
+                $"{candidate.name} scene={sceneName} " +
+                $"loaded={scene.isLoaded} activeSelf={candidate.gameObject.activeSelf} " +
+                $"activeInHierarchy={candidate.gameObject.activeInHierarchy} " +
+                $"root={(candidate.transform.root != null ? candidate.transform.root.name : "<null>")} " +
+                $"enabled={candidate.enabled}";
+        }
+
         private static GameManager FindFallbackCandidate()
         {
             GameManager activeCandidate = null;
             GameManager validCandidate = null;
+            GameManager inactivePersistentCandidate = null;
 
             foreach (GameManager candidate in Resources.FindObjectsOfTypeAll<GameManager>())
             {
@@ -52,9 +68,25 @@ namespace Modding.Patches
                 Scene fallbackScene = candidate.gameObject.scene;
                 if (fallbackScene.isLoaded)
                     validCandidate ??= candidate;
+
+                inactivePersistentCandidate ??= candidate;
             }
 
-            return activeCandidate ?? validCandidate;
+            return activeCandidate ?? validCandidate ?? inactivePersistentCandidate;
+        }
+
+        private static void LogFallbackCandidates()
+        {
+            List<string> descriptions = new List<string>();
+            foreach (GameManager candidate in Resources.FindObjectsOfTypeAll<GameManager>())
+            {
+                descriptions.Add(DescribeCandidate(candidate));
+            }
+
+            Debug.LogWarning(
+                "[MAPI GM] get_instance miss candidates=" +
+                (descriptions.Count == 0 ? "<none>" : string.Join(" | ", descriptions))
+            );
         }
 
         public extern void orig_OnApplicationQuit();
@@ -98,6 +130,7 @@ namespace Modding.Patches
 
                 if (_instance == null)
                 {
+                    LogFallbackCandidates();
                     Debug.LogError("Couldn't find a Game Manager, make sure one exists in the scene.");
                     return null;
                 }
