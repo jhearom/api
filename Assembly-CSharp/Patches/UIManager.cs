@@ -18,10 +18,28 @@ namespace Modding.Patches
         private static UIManager _instance;
 
         [MonoModIgnore]
-        private InputHandler ih;
+        private global::InputHandler ih;
 
         [MonoModIgnore]
         private GraphicRaycaster graphicRaycaster;
+
+        [MonoModIgnore]
+        private global::GameManager gm;
+
+        [MonoModIgnore]
+        private global::GameSettings gs;
+
+        [MonoModIgnore]
+        private global::HeroController hero_ctrl;
+
+        [MonoModIgnore]
+        private global::PlayerData playerData;
+
+        [MonoModIgnore]
+        public Canvas UICanvas;
+
+        [MonoModIgnore]
+        public SpriteRenderer gameTitle;
 
         public MenuScreen currentDynamicMenu { get; set; }
 
@@ -59,6 +77,29 @@ namespace Modding.Patches
         private static Action _editMenus;
 
         private Sprite LoadImage() => Assembly.GetExecutingAssembly().LoadEmbeddedSprite("Modding.logo.png", pixelsPerUnit: 100f);
+
+        private void SetupRefs()
+        {
+            gm = GameManager.instance;
+            gs = gm.gameSettings;
+            playerData = PlayerData.instance;
+            ih = gm.inputHandler;
+
+            if (gm.IsGameplayScene())
+            {
+                hero_ctrl = HeroController.instance;
+            }
+
+            if (gm.IsMenuScene() && gameTitle == null)
+            {
+                gameTitle = GameObject.Find("LogoTitle").GetComponent<SpriteRenderer>();
+            }
+
+            if (UICanvas.worldCamera == null && SuppressPreloadException.GameCameras.TryGetInstance(out var gameCameras))
+            {
+                UICanvas.worldCamera = gameCameras.mainCamera;
+            }
+        }
 
         public void Awake()
         {

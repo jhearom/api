@@ -35,6 +35,12 @@ namespace Modding.Patches
             while (HeroController.instance == null)
                 yield return null;
 
+            while (
+                !SuppressPreloadException.GameCameras.TryGetInstance(out var gameCameras) ||
+                gameCameras.sceneColorManager == null
+            )
+                yield return null;
+
             orig_Start();
         }
 

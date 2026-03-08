@@ -29,7 +29,26 @@ namespace Modding.Patches
         [MonoModIgnore]
         private float botSideY;
         [MonoModIgnore]
+        private bool hasGotRefs;
+        [MonoModIgnore]
         private extern bool ValidateBounds();
+
+        private void GetRefs()
+        {
+            if (this.hasGotRefs)
+                return;
+
+            if (!SuppressPreloadException.GameCameras.TryGetInstance(out this.gcams))
+                return;
+
+            this.cameraCtrl = this.gcams.cameraController;
+            this.camTarget = this.gcams.cameraTarget;
+
+            if (this.cameraCtrl == null || this.camTarget == null)
+                return;
+
+            this.hasGotRefs = true;
+        }
 
         private IEnumerator Start()
         {
