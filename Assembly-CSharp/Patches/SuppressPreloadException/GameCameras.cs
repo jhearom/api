@@ -1,4 +1,5 @@
-﻿using MonoMod;
+﻿using System;
+using MonoMod;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -67,19 +68,29 @@ namespace Modding.Patches.SuppressPreloadException
 
         private global::CameraController ResolveCameraController()
         {
+            if ((UnityEngine.Object)this == null)
+                return null;
+
             if (cameraController != null)
                 return cameraController;
 
             global::CameraController resolved = null;
+            try
+            {
+                if (mainCamera != null)
+                    resolved = mainCamera.GetComponent<global::CameraController>();
 
-            if (mainCamera != null)
-                resolved = mainCamera.GetComponent<global::CameraController>();
+                if (resolved == null && hudCamera != null)
+                    resolved = hudCamera.GetComponent<global::CameraController>();
 
-            if (resolved == null && hudCamera != null)
-                resolved = hudCamera.GetComponent<global::CameraController>();
-
-            if (resolved == null)
-                resolved = GetComponentInChildren<global::CameraController>(true);
+                if (resolved == null)
+                    resolved = GetComponentInChildren<global::CameraController>(true);
+            }
+            catch (NullReferenceException)
+            {
+                Debug.LogWarning("GameCameras.ResolveCameraController encountered an invalid camera host during scene init.");
+                return null;
+            }
 
             if (resolved != null)
                 cameraController = resolved;
@@ -89,6 +100,9 @@ namespace Modding.Patches.SuppressPreloadException
 
         private global::CameraTarget ResolveCameraTarget()
         {
+            if ((UnityEngine.Object)this == null)
+                return null;
+
             if (cameraTarget != null)
                 return cameraTarget;
 
@@ -98,7 +112,17 @@ namespace Modding.Patches.SuppressPreloadException
                 resolved = resolvedCameraController.camTarget;
 
             if (resolved == null)
-                resolved = GetComponentInChildren<global::CameraTarget>(true);
+            {
+                try
+                {
+                    resolved = GetComponentInChildren<global::CameraTarget>(true);
+                }
+                catch (NullReferenceException)
+                {
+                    Debug.LogWarning("GameCameras.ResolveCameraTarget encountered an invalid camera host during scene init.");
+                    return null;
+                }
+            }
 
             if (resolved != null)
                 cameraTarget = resolved;
@@ -119,6 +143,11 @@ namespace Modding.Patches.SuppressPreloadException
             }
 
             instance = GameCameras._instance;
+            if (instance != null)
+            {
+                UnityEngine.Object.DontDestroyOnLoad(instance.gameObject);
+            }
+
             return instance != null;
         }
 
@@ -139,23 +168,6 @@ namespace Modding.Patches.SuppressPreloadException
         {
             if (this == GameCameras._instance)
                 StartScene();
-        }
-
-        private void Awake()
-        {
-            if (_instance == null)
-            {
-                _instance = this;
-
-                Transform root = transform.root;
-                UnityEngine.Object.DontDestroyOnLoad(root != null ? root.gameObject : gameObject);
-                return;
-            }
-
-            if (_instance != this)
-            {
-                UnityEngine.Object.DestroyImmediate(gameObject);
-            }
         }
 
         public void MoveMenuToHUDCamera()
