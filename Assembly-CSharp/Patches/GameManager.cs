@@ -219,14 +219,35 @@ namespace Modding.Patches
             private set => _uiInstance = value;
         }
 
+        private void RefreshCameraRefs()
+        {
+            gameCams = SuppressPreloadException.GameCameras.instance;
+            set_cameraCtrl(gameCams != null ? gameCams.cameraController : null);
+
+            inventoryFSM = null;
+
+            if (gameCams == null)
+                return;
+
+            Transform hudCamera = gameCams.gameObject.transform.Find("HudCamera");
+            Transform inventory = hudCamera != null ? hudCamera.Find("Inventory") : null;
+            if (inventory != null)
+            {
+                inventoryFSM = inventory.gameObject.GetComponent<PlayMakerFSM>();
+            }
+            else
+            {
+                Debug.LogWarning("Couldn't find Inventory FSM under GameCameras/HudCamera/Inventory during GameManager camera-ref refresh.");
+            }
+        }
+
         [MonoModReplace]
         private void SetupGameRefs()
         {
             playerData = PlayerData.instance;
             sceneData = SceneData.instance;
 
-            gameCams = SuppressPreloadException.GameCameras.instance;
-            set_cameraCtrl(gameCams != null ? gameCams.cameraController : null);
+            RefreshCameraRefs();
 
             gameSettings = new GameSettings();
             set_inputHandler(GetComponent<InputHandler>());
@@ -238,22 +259,7 @@ namespace Modding.Patches
                 UnityEngine.Object.DontDestroyOnLoad(_spawnedInControlManager);
             }
 
-            inventoryFSM = null;
-
-            if (gameCams != null)
-            {
-                Transform hudCamera = gameCams.gameObject.transform.Find("HudCamera");
-                Transform inventory = hudCamera != null ? hudCamera.Find("Inventory") : null;
-                if (inventory != null)
-                {
-                    inventoryFSM = inventory.gameObject.GetComponent<PlayMakerFSM>();
-                }
-                else
-                {
-                    Debug.LogWarning("Couldn't find Inventory FSM under GameCameras/HudCamera/Inventory during SetupGameRefs.");
-                }
-            }
-            else
+            if (gameCams == null)
             {
                 Debug.LogWarning("GameCameras not ready during GameManager.SetupGameRefs; camera refs will be resolved later.");
             }
@@ -444,6 +450,8 @@ namespace Modding.Patches
         public void SetupSceneRefs(bool refreshTilemapInfo)
         {
             orig_SetupSceneRefs(refreshTilemapInfo);
+
+            RefreshCameraRefs();
 
 
             if (IsGameplayScene())
