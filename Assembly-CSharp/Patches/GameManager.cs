@@ -20,31 +20,41 @@ namespace Modding.Patches
         [MonoModIgnore]
         private static GameManager _instance;
 
-        private static bool IsLoadedSceneObject(GameManager candidate)
+        private static bool IsUsableSceneObject(GameManager candidate)
         {
             if (candidate == null)
                 return false;
 
             Scene scene = candidate.gameObject.scene;
-            return scene.IsValid() && scene.isLoaded;
+            return scene.IsValid();
         }
 
-        private static GameManager FindLoadedSceneFallback()
+        private static GameManager FindFallbackCandidate()
         {
-            GameManager loadedCandidate = null;
+            GameManager activeCandidate = null;
+            GameManager validCandidate = null;
 
             foreach (GameManager candidate in Resources.FindObjectsOfTypeAll<GameManager>())
             {
-                if (!IsLoadedSceneObject(candidate))
+                if (!IsUsableSceneObject(candidate))
                     continue;
 
                 if (candidate.gameObject.activeInHierarchy)
-                    return candidate;
+                {
+                    Scene scene = candidate.gameObject.scene;
+                    if (scene.isLoaded)
+                        return candidate;
 
-                loadedCandidate ??= candidate;
+                    activeCandidate ??= candidate;
+                    continue;
+                }
+
+                Scene fallbackScene = candidate.gameObject.scene;
+                if (fallbackScene.isLoaded)
+                    validCandidate ??= candidate;
             }
 
-            return loadedCandidate;
+            return activeCandidate ?? validCandidate;
         }
 
         public extern void orig_OnApplicationQuit();
@@ -83,7 +93,7 @@ namespace Modding.Patches
 
                 if (_instance == null)
                 {
-                    _instance = FindLoadedSceneFallback();
+                    _instance = FindFallbackCandidate();
                 }
 
                 if (_instance == null)
