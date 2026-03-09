@@ -41,6 +41,7 @@
         <BuildInfoFile>$(IntermediateOutputPath)BuildInfo.g.cs</BuildInfoFile>
         <GitBranch>unknown</GitBranch>
         <GitCommit>unknown</GitCommit>
+        <BuildTimestampUtc>unknown</BuildTimestampUtc>
     </PropertyGroup>
 
     <Target Name="GenerateBuildInfo" BeforeTargets="BeforeBuild">
@@ -54,6 +55,7 @@
         <PropertyGroup>
             <GitBranch Condition="'$(GitBranchRaw)' != ''">$([System.String]::Copy('$(GitBranchRaw)').Trim())</GitBranch>
             <GitCommit Condition="'$(GitCommitRaw)' != ''">$([System.String]::Copy('$(GitCommitRaw)').Trim())</GitCommit>
+            <BuildTimestampUtc>$([System.DateTime]::UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"))</BuildTimestampUtc>
         </PropertyGroup>
 
         <ItemGroup>
@@ -67,9 +69,12 @@
                 <Text>internal const string Commit = "$(GitCommit)";</Text>
             </BuildInfoLine>
             <BuildInfoLine Include="buildinfo-4">
-                <Text>internal static string Describe() =&gt; $"branch={Branch} commit={Commit}";</Text>
+                <Text>internal const string BuiltUtc = "$(BuildTimestampUtc)";</Text>
             </BuildInfoLine>
             <BuildInfoLine Include="buildinfo-5">
+                <Text>internal static string Describe() =&gt; $"branch={Branch} builtUtc={BuiltUtc}";</Text>
+            </BuildInfoLine>
+            <BuildInfoLine Include="buildinfo-6">
                 <Text>} }</Text>
             </BuildInfoLine>
         </ItemGroup>

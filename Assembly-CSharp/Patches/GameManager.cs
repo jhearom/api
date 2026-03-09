@@ -44,6 +44,22 @@ namespace Modding.Patches
                 $"enabled={candidate.enabled}";
         }
 
+        private string DescribeSelf()
+        {
+            Scene scene = gameObject.scene;
+            Transform root = transform.root;
+            Transform parent = transform.parent;
+            return
+                $"name={name} scene={(scene.IsValid() ? scene.name : "<invalid>")} " +
+                $"loaded={scene.isLoaded} activeSelf={gameObject.activeSelf} " +
+                $"activeInHierarchy={gameObject.activeInHierarchy} enabled={enabled} " +
+                $"parent={(parent != null ? parent.name : "<null>")} " +
+                $"root={(root != null ? root.name : "<null>")} " +
+                $"isRoot={(ReferenceEquals(root, transform)).ToString()} " +
+                $"rootActive={(root != null ? root.gameObject.activeInHierarchy.ToString() : "<null>")} " +
+                $"isInstance={(ReferenceEquals(_instance, this)).ToString()}";
+        }
+
         private static GameManager FindFallbackCandidate()
         {
             GameManager activeCandidate = null;
@@ -134,6 +150,12 @@ namespace Modding.Patches
                     Debug.LogError("Couldn't find a Game Manager, make sure one exists in the scene.");
                     return null;
                 }
+
+                if (Application.isPlaying)
+                {
+                    UnityEngine.Object.DontDestroyOnLoad(_instance.gameObject);
+                    Debug.Log($"[MAPI GM] get_instance persisted {_instance.name} after lookup");
+                }
             }
 
             return _instance;
@@ -143,6 +165,8 @@ namespace Modding.Patches
         {
             Transform root = transform.root;
             GameObject persistentObject = root != null ? root.gameObject : gameObject;
+
+            Debug.Log($"[MAPI GM] Awake {DescribeSelf()} persistentObject={persistentObject.name}");
 
             if (_instance == null)
             {
@@ -160,6 +184,29 @@ namespace Modding.Patches
             }
 
             SetupGameRefs();
+        }
+
+        private void OnEnable()
+        {
+            Debug.Log($"[MAPI GM] OnEnable {DescribeSelf()}");
+        }
+
+        private void OnDisable()
+        {
+            Debug.Log($"[MAPI GM] OnDisable {DescribeSelf()}");
+            Debug.Log($"[MAPI GM] OnDisable stack:\n{Environment.StackTrace}");
+        }
+
+        private void OnDestroy()
+        {
+            Debug.Log($"[MAPI GM] OnDestroy {DescribeSelf()}");
+            Debug.Log($"[MAPI GM] OnDestroy stack:\n{Environment.StackTrace}");
+
+            if (ReferenceEquals(_instance, this))
+            {
+                _instance = null;
+                Debug.Log("[MAPI GM] Cleared singleton reference from OnDestroy");
+            }
         }
 
         public extern void orig_ClearSaveFile(int saveSlot, Action<bool> callback);
