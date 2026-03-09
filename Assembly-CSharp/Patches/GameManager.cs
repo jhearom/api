@@ -79,21 +79,18 @@ namespace Modding.Patches
 
         private void Awake()
         {
-            Transform root = transform.root;
-            GameObject persistentObject = root != null ? root.gameObject : gameObject;
-
             if (_instance == null)
             {
                 _instance = this;
 
-                UnityEngine.Object.DontDestroyOnLoad(persistentObject);
+                UnityEngine.Object.DontDestroyOnLoad(gameObject);
                 SetupGameRefs();
                 return;
             }
 
             if (_instance != this)
             {
-                UnityEngine.Object.Destroy(persistentObject);
+                UnityEngine.Object.Destroy(gameObject);
                 return;
             }
 
