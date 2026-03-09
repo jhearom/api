@@ -66,6 +66,7 @@ internal class ProgressBar : MonoBehaviour
     {
         _blanker = CanvasUtil.CreateCanvas(RenderMode.ScreenSpaceOverlay, new Vector2(CanvasResolutionWidth, CanvasResolutionHeight));
         
+        Debug.Log($"[MAPI DDOL] ProgressBar.CreateBlanker target={_blanker.name} isRoot={ReferenceEquals(_blanker.transform.root, _blanker.transform)} root={_blanker.transform.root.name}");
         DontDestroyOnLoad(_blanker);
 
         GameObject panel = CanvasUtil.CreateImagePanel

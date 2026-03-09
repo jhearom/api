@@ -108,6 +108,7 @@ namespace Modding.Patches
 
                 if (Application.isPlaying)
                 {
+                    Debug.Log($"[MAPI DDOL] GameManager.get_instance target={_instance.gameObject.name} isRoot={ReferenceEquals(_instance.transform.root, _instance.transform)} root={_instance.transform.root.name}");
                     UnityEngine.Object.DontDestroyOnLoad(_instance.gameObject);
                     Debug.Log($"[MAPI GM] get_instance persisted {_instance.name} after lookup");
                 }
@@ -127,6 +128,7 @@ namespace Modding.Patches
             {
                 _instance = this;
 
+                Debug.Log($"[MAPI DDOL] GameManager.Awake target={persistentObject.name} isRoot={ReferenceEquals(persistentObject.transform.root, persistentObject.transform)} root={persistentObject.transform.root.name}");
                 UnityEngine.Object.DontDestroyOnLoad(persistentObject);
                 SetupGameRefs();
                 return;
@@ -312,7 +314,9 @@ namespace Modding.Patches
             if (_spawnedInControlManager == null)
             {
                 _spawnedInControlManager = UnityEngine.Object.Instantiate(inControlManagerPrefab);
-                UnityEngine.Object.DontDestroyOnLoad(_spawnedInControlManager);
+                Transform root = _spawnedInControlManager.transform.root;
+                Debug.Log($"[MAPI DDOL] GameManager.SetupGameRefs/InControl target={(root != null ? root.gameObject.name : _spawnedInControlManager.gameObject.name)} isRoot={ReferenceEquals(_spawnedInControlManager.transform, root)} root={(root != null ? root.name : "<null>")}");
+                UnityEngine.Object.DontDestroyOnLoad(root != null ? root.gameObject : _spawnedInControlManager.gameObject);
             }
 
             if (gameCams == null)

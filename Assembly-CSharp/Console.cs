@@ -49,6 +49,7 @@ namespace Modding
                 _font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
             }
 
+            Debug.Log($"[MAPI DDOL] Console.Start/self target={gameObject.name} isRoot={ReferenceEquals(transform.root, transform)} root={transform.root.name}");
             DontDestroyOnLoad(gameObject);
 
             if (_overlayCanvas != null)
@@ -61,6 +62,7 @@ namespace Modding
             CanvasGroup cg = _overlayCanvas.GetComponent<CanvasGroup>();
             cg.interactable = false;
             cg.blocksRaycasts = false;
+            Debug.Log($"[MAPI DDOL] Console.Start/overlay target={_overlayCanvas.name} isRoot={ReferenceEquals(_overlayCanvas.transform.root, _overlayCanvas.transform)} root={_overlayCanvas.transform.root.name}");
             DontDestroyOnLoad(_overlayCanvas);
 
             GameObject background = CanvasUtil.CreateImagePanel

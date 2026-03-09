@@ -132,20 +132,25 @@ namespace Modding.Patches.SuppressPreloadException
 
         public static bool TryGetInstance(out GameCameras instance)
         {
+            bool recovered = false;
+
             if (GameCameras._instance == null)
             {
                 GameCameras._instance = UnityEngine.Object.FindObjectOfType<GameCameras>();
+                recovered = GameCameras._instance != null;
             }
 
             if (GameCameras._instance == null)
             {
                 GameCameras._instance = FindLoadedSceneFallback();
+                recovered = GameCameras._instance != null;
             }
 
             instance = GameCameras._instance;
-            if (instance != null)
+            if (instance != null && recovered)
             {
                 Transform root = instance.transform.root;
+                Debug.Log($"[MAPI DDOL] GameCameras.TryGetInstance/recovered target={(root != null ? root.gameObject.name : instance.gameObject.name)} isRoot={ReferenceEquals(instance.transform, root)} root={(root != null ? root.name : "<null>")}");
                 UnityEngine.Object.DontDestroyOnLoad(root != null ? root.gameObject : instance.gameObject);
             }
 

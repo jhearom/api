@@ -127,27 +127,13 @@ namespace Modding.Patches
             LogUiSnapshot("SetupRefs");
         }
 
+        public extern void orig_Awake();
+
         public void Awake()
         {
             Transform root = transform.root;
-            GameObject persistentObject = root != null ? root.gameObject : gameObject;
-
-            if (_instance == null)
-            {
-                _instance = this;
-
-                if (Application.isPlaying)
-                {
-                    UnityEngine.Object.DontDestroyOnLoad(persistentObject);
-                }
-            }
-            else if (_instance != this)
-            {
-                UnityEngine.Object.Destroy(persistentObject);
-                return;
-            }
-
-            graphicRaycaster = GetComponentInChildren<GraphicRaycaster>();
+            Debug.Log($"[MAPI DDOL] UIManager.Awake/orig target={gameObject.name} isRoot={ReferenceEquals(root, transform)} root={(root != null ? root.name : "<null>")}");
+            orig_Awake();
 
             if (_instance != this) 
                 return;
