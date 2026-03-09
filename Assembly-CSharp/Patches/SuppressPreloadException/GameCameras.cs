@@ -150,7 +150,6 @@ namespace Modding.Patches.SuppressPreloadException
             if (instance != null && recovered)
             {
                 Transform root = instance.transform.root;
-                Debug.Log($"[MAPI DDOL] GameCameras.TryGetInstance/recovered target={(root != null ? root.gameObject.name : instance.gameObject.name)} isRoot={ReferenceEquals(instance.transform, root)} root={(root != null ? root.name : "<null>")}");
                 UnityEngine.Object.DontDestroyOnLoad(root != null ? root.gameObject : instance.gameObject);
             }
 
@@ -196,16 +195,6 @@ namespace Modding.Patches.SuppressPreloadException
                 uiManager.UICanvas.worldCamera = hudCamera;
                 uiManager.UICanvas.renderMode = RenderMode.ScreenSpaceCamera;
             }
-
-            Debug.Log(
-                $"[MAPI CAM] MoveMenuToHUDCamera " +
-                $"scene={UnityEngine.SceneManagement.SceneManager.GetActiveScene().name} " +
-                $"mainCamera={(mainCamera != null ? mainCamera.name : "<null>")} " +
-                $"hudCamera={(hudCamera != null ? hudCamera.name : "<null>")} " +
-                $"hudCameraActive={(hudCamera != null && hudCamera.gameObject != null ? hudCamera.gameObject.activeInHierarchy.ToString() : "<null>")} " +
-                $"uiCanvasWorldCamera={(uiManager != null && uiManager.UICanvas != null && uiManager.UICanvas.worldCamera != null ? uiManager.UICanvas.worldCamera.name : "<null>")} " +
-                $"uiCanvasRenderMode={(uiManager != null && uiManager.UICanvas != null ? uiManager.UICanvas.renderMode.ToString() : "<null>")}"
-            );
 
             mainCamera.cullingMask = mainCameraMask ^ 134217728;
             hudCamera.cullingMask = hudCameraMask | 134217728;
@@ -273,13 +262,6 @@ namespace Modding.Patches.SuppressPreloadException
 
             if (hudCamera != null && !hudCamera.gameObject.activeSelf)
                 hudCamera.gameObject.SetActive(true);
-
-            Debug.Log(
-                $"[MAPI CAM] GameplayStart " +
-                $"scene={UnityEngine.SceneManagement.SceneManager.GetActiveScene().name} " +
-                $"hudCamera={(hudCamera != null ? hudCamera.name : "<null>")} " +
-                $"hudCameraActive={(hudCamera != null && hudCamera.gameObject != null ? hudCamera.gameObject.activeInHierarchy.ToString() : "<null>")}"
-            );
 
             global::CameraController liveCameraController = ResolveCameraController();
             if (liveCameraController != null)
