@@ -20,15 +20,6 @@ namespace Modding.Patches
         [MonoModIgnore]
         private static GameManager _instance;
 
-        private static bool IsUsableSceneObject(GameManager candidate)
-        {
-            if (candidate == null)
-                return false;
-
-            Scene scene = candidate.gameObject.scene;
-            return scene.IsValid();
-        }
-
         private static string DescribeCandidate(GameManager candidate)
         {
             if (candidate == null)
@@ -58,37 +49,6 @@ namespace Modding.Patches
                 $"isRoot={(ReferenceEquals(root, transform)).ToString()} " +
                 $"rootActive={(root != null ? root.gameObject.activeInHierarchy.ToString() : "<null>")} " +
                 $"isInstance={(ReferenceEquals(_instance, this)).ToString()}";
-        }
-
-        private static GameManager FindFallbackCandidate()
-        {
-            GameManager activeCandidate = null;
-            GameManager validCandidate = null;
-            GameManager inactivePersistentCandidate = null;
-
-            foreach (GameManager candidate in Resources.FindObjectsOfTypeAll<GameManager>())
-            {
-                if (!IsUsableSceneObject(candidate))
-                    continue;
-
-                if (candidate.gameObject.activeInHierarchy)
-                {
-                    Scene scene = candidate.gameObject.scene;
-                    if (scene.isLoaded)
-                        return candidate;
-
-                    activeCandidate ??= candidate;
-                    continue;
-                }
-
-                Scene fallbackScene = candidate.gameObject.scene;
-                if (fallbackScene.isLoaded)
-                    validCandidate ??= candidate;
-
-                inactivePersistentCandidate ??= candidate;
-            }
-
-            return activeCandidate ?? validCandidate ?? inactivePersistentCandidate;
         }
 
         private static void LogFallbackCandidates()
@@ -138,11 +98,6 @@ namespace Modding.Patches
             if (_instance == null)
             {
                 _instance = UnityEngine.Object.FindObjectOfType<GameManager>();
-
-                if (_instance == null)
-                {
-                    _instance = FindFallbackCandidate();
-                }
 
                 if (_instance == null)
                 {
