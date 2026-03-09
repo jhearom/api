@@ -39,6 +39,7 @@
 
     <PropertyGroup>
         <BuildInfoFile>$(IntermediateOutputPath)BuildInfo.g.cs</BuildInfoFile>
+        <BuildInfoTextFile>$(OutputDir)/BUILD_INFO.txt</BuildInfoTextFile>
         <GitBranch>unknown</GitBranch>
         <GitCommit>unknown</GitCommit>
         <BuildTimestampUtc>unknown</BuildTimestampUtc>
@@ -120,6 +121,23 @@
 
         <!-- Make the output directory -->
         <MakeDir Directories="$(OutputDir)/" />
+
+        <ItemGroup>
+            <BuildInfoTextLine Include="build-text-1">
+                <Text>branch=$(GitBranch)</Text>
+            </BuildInfoTextLine>
+            <BuildInfoTextLine Include="build-text-2">
+                <Text>commit=$(GitCommit)</Text>
+            </BuildInfoTextLine>
+            <BuildInfoTextLine Include="build-text-3">
+                <Text>builtUtc=$(BuildTimestampUtc)</Text>
+            </BuildInfoTextLine>
+        </ItemGroup>
+
+        <WriteLinesToFile
+            File="$(BuildInfoTextFile)"
+            Overwrite="true"
+            Lines="@(BuildInfoTextLine->'%(Text)')" />
 
         <!-- Copy the API, the documentation, and the README. -->
         <Copy SourceFiles="../README.ModdingApi.md" DestinationFiles="$(OutputDir)/README.md" />

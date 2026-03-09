@@ -20,50 +20,7 @@ namespace Modding.Patches
         [MonoModIgnore]
         private static GameManager _instance;
 
-        private static string DescribeCandidate(GameManager candidate)
-        {
-            if (candidate == null)
-                return "<null>";
-
-            Scene scene = candidate.gameObject.scene;
-            string sceneName = scene.IsValid() ? scene.name : "<invalid>";
-            return
-                $"{candidate.name} scene={sceneName} " +
-                $"loaded={scene.isLoaded} activeSelf={candidate.gameObject.activeSelf} " +
-                $"activeInHierarchy={candidate.gameObject.activeInHierarchy} " +
-                $"root={(candidate.transform.root != null ? candidate.transform.root.name : "<null>")} " +
-                $"enabled={candidate.enabled}";
-        }
-
-        private string DescribeSelf()
-        {
-            Scene scene = gameObject.scene;
-            Transform root = transform.root;
-            Transform parent = transform.parent;
-            return
-                $"name={name} scene={(scene.IsValid() ? scene.name : "<invalid>")} " +
-                $"loaded={scene.isLoaded} activeSelf={gameObject.activeSelf} " +
-                $"activeInHierarchy={gameObject.activeInHierarchy} enabled={enabled} " +
-                $"parent={(parent != null ? parent.name : "<null>")} " +
-                $"root={(root != null ? root.name : "<null>")} " +
-                $"isRoot={(ReferenceEquals(root, transform)).ToString()} " +
-                $"rootActive={(root != null ? root.gameObject.activeInHierarchy.ToString() : "<null>")} " +
-                $"isInstance={(ReferenceEquals(_instance, this)).ToString()}";
-        }
-
-        private static void LogFallbackCandidates()
-        {
-            List<string> descriptions = new List<string>();
-            foreach (GameManager candidate in Resources.FindObjectsOfTypeAll<GameManager>())
-            {
-                descriptions.Add(DescribeCandidate(candidate));
-            }
-
-            Debug.LogWarning(
-                "[MAPI GM] get_instance miss candidates=" +
-                (descriptions.Count == 0 ? "<none>" : string.Join(" | ", descriptions))
-            );
-        }
+        private static bool _loggedInstanceMiss;
 
         public extern void orig_OnApplicationQuit();
 
@@ -101,16 +58,19 @@ namespace Modding.Patches
 
                 if (_instance == null)
                 {
-                    LogFallbackCandidates();
-                    Debug.LogError("Couldn't find a Game Manager, make sure one exists in the scene.");
+                    if (!_loggedInstanceMiss)
+                    {
+                        Debug.LogError("Couldn't find a Game Manager, make sure one exists in the scene.");
+                        _loggedInstanceMiss = true;
+                    }
                     return null;
                 }
 
+                _loggedInstanceMiss = false;
+
                 if (Application.isPlaying)
                 {
-                    Debug.Log($"[MAPI DDOL] GameManager.get_instance target={_instance.gameObject.name} isRoot={ReferenceEquals(_instance.transform.root, _instance.transform)} root={_instance.transform.root.name}");
                     UnityEngine.Object.DontDestroyOnLoad(_instance.gameObject);
-                    Debug.Log($"[MAPI GM] get_instance persisted {_instance.name} after lookup");
                 }
             }
 
@@ -122,13 +82,10 @@ namespace Modding.Patches
             Transform root = transform.root;
             GameObject persistentObject = root != null ? root.gameObject : gameObject;
 
-            Debug.Log($"[MAPI GM] Awake {DescribeSelf()} persistentObject={persistentObject.name}");
-
             if (_instance == null)
             {
                 _instance = this;
 
-                Debug.Log($"[MAPI DDOL] GameManager.Awake target={persistentObject.name} isRoot={ReferenceEquals(persistentObject.transform.root, persistentObject.transform)} root={persistentObject.transform.root.name}");
                 UnityEngine.Object.DontDestroyOnLoad(persistentObject);
                 SetupGameRefs();
                 return;
@@ -143,26 +100,11 @@ namespace Modding.Patches
             SetupGameRefs();
         }
 
-        private void OnEnable()
-        {
-            Debug.Log($"[MAPI GM] OnEnable {DescribeSelf()}");
-        }
-
-        private void OnDisable()
-        {
-            Debug.Log($"[MAPI GM] OnDisable {DescribeSelf()}");
-            Debug.Log($"[MAPI GM] OnDisable stack:\n{Environment.StackTrace}");
-        }
-
         private void OnDestroy()
         {
-            Debug.Log($"[MAPI GM] OnDestroy {DescribeSelf()}");
-            Debug.Log($"[MAPI GM] OnDestroy stack:\n{Environment.StackTrace}");
-
             if (ReferenceEquals(_instance, this))
             {
                 _instance = null;
-                Debug.Log("[MAPI GM] Cleared singleton reference from OnDestroy");
             }
         }
 
