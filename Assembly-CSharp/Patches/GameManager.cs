@@ -228,14 +228,6 @@ namespace Modding.Patches
                 Debug.LogWarning("Couldn't find Inventory FSM under GameCameras/HudCamera/Inventory during GameManager camera-ref refresh.");
             }
 
-            Debug.Log(
-                $"[MAPI GM] RefreshCameraRefs " +
-                $"scene={UnityEngine.SceneManagement.SceneManager.GetActiveScene().name} " +
-                $"gameCams={(gameCams != null ? gameCams.name : "<null>")} " +
-                $"cameraCtrl={(gameCams != null && gameCams.cameraController != null ? gameCams.cameraController.name : "<null>")} " +
-                $"hudCamera={(gameCams != null && gameCams.hudCamera != null ? gameCams.hudCamera.name : "<null>")} " +
-                $"inventoryFSM={(inventoryFSM != null ? inventoryFSM.name : "<null>")}"
-            );
         }
 
         [MonoModReplace]
@@ -451,15 +443,6 @@ namespace Modding.Patches
             orig_SetupSceneRefs(refreshTilemapInfo);
 
             RefreshCameraRefs();
-
-            Debug.Log(
-                $"[MAPI GM] SetupSceneRefs " +
-                $"scene={UnityEngine.SceneManagement.SceneManager.GetActiveScene().name} " +
-                $"refreshTilemapInfo={refreshTilemapInfo} " +
-                $"isGameplay={IsGameplayScene()} " +
-                $"inventoryFSM={(inventoryFSM != null ? inventoryFSM.name : "<null>")}"
-            );
-
 
             if (IsGameplayScene())
             {
