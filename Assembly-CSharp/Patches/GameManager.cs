@@ -20,8 +20,6 @@ namespace Modding.Patches
         [MonoModIgnore]
         private static GameManager _instance;
 
-        private static bool _loggedInstanceMiss;
-
         public extern void orig_OnApplicationQuit();
 
         public void OnApplicationQuit()
@@ -58,15 +56,8 @@ namespace Modding.Patches
 
                 if (_instance == null)
                 {
-                    if (!_loggedInstanceMiss)
-                    {
-                        Debug.LogError("Couldn't find a Game Manager, make sure one exists in the scene.");
-                        _loggedInstanceMiss = true;
-                    }
                     return null;
                 }
-
-                _loggedInstanceMiss = false;
 
                 if (Application.isPlaying)
                 {
