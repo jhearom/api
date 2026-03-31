@@ -14,6 +14,20 @@
 
     <ItemGroup>
         <Files Include="$(SolutionDir)Vanilla/*" />
+        <Files Remove="$(SolutionDir)Vanilla/mscorlib.dll" />
+        <Files Remove="$(SolutionDir)Vanilla/System.dll" />
+        <Files Remove="$(SolutionDir)Vanilla/System.Core.dll" />
+        <Files Remove="$(SolutionDir)Vanilla/System.Xml.dll" />
+        <Files Remove="$(SolutionDir)Vanilla/Mono.Cecil.dll" />
+        <Files Remove="$(SolutionDir)Vanilla/Mono.Security.dll" />
+        <Files Remove="$(SolutionDir)Vanilla/ConditionalExpression.dll" />
+        <Files Remove="$(SolutionDir)Vanilla/MMHOOK_Assembly-CSharp.dll" />
+        <Files Remove="$(SolutionDir)Vanilla/MMHOOK_PlayMaker.dll" />
+        <Files Remove="$(SolutionDir)Vanilla/MonoMod.RuntimeDetour.dll" />
+        <Files Remove="$(SolutionDir)Vanilla/MonoMod.Utils.dll" />
+        <Files Remove="$(SolutionDir)Vanilla/Newtonsoft.Json.dll" />
+        <Files Remove="$(SolutionDir)Vanilla/System.Runtime.Serialization.dll" />
+        <Files Remove="$(SolutionDir)Vanilla/System.Runtime.Serialization.Formatters.Soap.dll" />
         <Files Include="$(SolutionDir)JsonNet/System.Runtime.Serialization.dll" />
 
         <BuildDir Include="$(TargetDir)" />
@@ -23,25 +37,44 @@
         <OutputDir>$(SolutionDir)OutputFinal</OutputDir>
         <Mono Condition="$(OS) == WINDOWS_NT" />
         <Mono Condition="$(OS) != WINDOWS_NT">mono</Mono>
+        <MonoCSharp Condition="$(OS) != WINDOWS_NT">mcs</MonoCSharp>
+        <MonoPathPrefix Condition="$(OS) != WINDOWS_NT">MONO_PATH=$(TargetDir) </MonoPathPrefix>
+        <MonoFrameworkDir Condition="$(OS) != WINDOWS_NT">/usr/lib/mono/2.0-api</MonoFrameworkDir>
+        <PrePatcherExe>$(SolutionDir)PrePatcher/bin/$(Configuration)/net472/PrePatcher.exe</PrePatcherExe>
+        <MonoModDriverSource>$(SolutionDir)MonoModDriver/Program.cs</MonoModDriverSource>
+        <MonoModDriverExe>$(TargetDir)MonoModDriver.exe</MonoModDriverExe>
         <ILRepack>$(SolutionDir)ILRepack/ILRepack.exe</ILRepack>
         <Merge>System.Runtime.Serialization.dll Newtonsoft.Json.dll MMHOOK_Assembly-CSharp.dll MMHOOK_PlayMaker.dll MonoMod.Utils.dll Mono.Cecil.dll MonoMod.RuntimeDetour.dll ValueTupleBridge.dll</Merge>
+        <MonoCecilToolDir Condition="'$(NUGET_PACKAGES)' != ''">$(NUGET_PACKAGES)/mono.cecil/0.10.4/lib/net35</MonoCecilToolDir>
+        <MonoCecilToolDir Condition="'$(MonoCecilToolDir)' == '' and '$(NuGetPackageRoot)' != ''">$(NuGetPackageRoot)mono.cecil/0.10.4/lib/net35</MonoCecilToolDir>
+        <MonoCecilToolDir Condition="'$(MonoCecilToolDir)' == '' and '$(RestorePackagesPath)' != ''">$(MSBuildProjectDirectory)/$(RestorePackagesPath)/mono.cecil/0.10.4/lib/net35</MonoCecilToolDir>
+        <MonoCecilToolDir Condition="'$(MonoCecilToolDir)' == '' and '$(UserProfile)' != ''">$(UserProfile)/.nuget/packages/mono.cecil/0.10.4/lib/net35</MonoCecilToolDir>
     </PropertyGroup>
 
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-        <Delete Condition="Exists('$(OutputDir)')" Files="$(OutputDir)" />
+        <RemoveDir Condition="Exists('$(OutputDir)')" Directories="$(OutputDir)" />
         <Delete Condition="Exists('$(SolutionDir)ModdingAPI.zip')" Files="$(SolutionDir)ModdingAPI.zip" />
 
         <Copy SkipUnchangedFiles="true" SourceFiles="@(Files)" DestinationFolder="@(BuildDir)" />
 
-        <Exec Condition="!Exists('$(TargetDir)Assembly-CSharp-patched.dll')" WorkingDirectory="@(BuildDir)" Command="$(Mono) $(SolutionDir)PrePatcher/Output/PrePatcher.exe Assembly-CSharp.dll Assembly-CSharp-patched.dll" />
+        <Exec WorkingDirectory="@(BuildDir)" Command="$(MonoCSharp) -out:&quot;$(MonoModDriverExe)&quot; &quot;$(MonoModDriverSource)&quot;" />
+
+        <!-- MonoMod tooling breaks if the working directory contains the game's BCL or an older Mono.Cecil. -->
+        <Delete Files="$(TargetDir)mscorlib.dll;$(TargetDir)System.dll;$(TargetDir)System.Core.dll;$(TargetDir)System.Xml.dll;$(TargetDir)Mono.Cecil.dll;$(TargetDir)Mono.Cecil.Mdb.dll;$(TargetDir)Mono.Cecil.Pdb.dll;$(TargetDir)Mono.Cecil.Rocks.dll" />
+        <Copy SkipUnchangedFiles="true"
+              SourceFiles="$(MonoCecilToolDir)/Mono.Cecil.dll;$(MonoCecilToolDir)/Mono.Cecil.Mdb.dll;$(MonoCecilToolDir)/Mono.Cecil.Pdb.dll;$(MonoCecilToolDir)/Mono.Cecil.Rocks.dll"
+              DestinationFolder="@(BuildDir)" />
+
+        <Exec Condition="!Exists('$(TargetDir)Assembly-CSharp-patched.dll')" WorkingDirectory="@(BuildDir)" Command="$(Mono) &quot;$(PrePatcherExe)&quot; Assembly-CSharp.dll Assembly-CSharp-patched.dll" />
         <Copy SkipUnchangedFiles="true" SourceFiles="$(TargetDir)Assembly-CSharp-patched.dll" DestinationFiles="$(TargetDir)Assembly-CSharp.dll" />
 
         <Delete Condition="Exists('MONOMODDED_Assembly-CSharp.dll')" Files="MONOMODDED_Assembly-CSharp.dll" />
-        <Exec WorkingDirectory="@(BuildDir)" Command="$(Mono) MonoMod.exe Assembly-CSharp.dll" />
+        <Delete Condition="Exists('MONOMODDED.dll')" Files="MONOMODDED.dll" />
+        <Exec WorkingDirectory="@(BuildDir)" Command="$(Mono) &quot;$(MonoModDriverExe)&quot; &quot;$(TargetDir)MonoMod.exe&quot; Assembly-CSharp.dll MONOMODDED_Assembly-CSharp.dll &quot;$(TargetDir)&quot; &quot;$(MonoFrameworkDir)&quot;" />
 
         <!-- Generate Hooks !-->
-        <Exec Condition="!Exists('$(TargetDir)MMHOOK_Assembly-CSharp.dll')" WorkingDirectory="@(BuildDir)" Command="$(Mono) MonoMod.RuntimeDetour.HookGen.exe --private Assembly-CSharp.dll" />
-        <Exec Condition="!Exists('$(TargetDir)MMHOOK_Playmaker.dll')" WorkingDirectory="@(BuildDir)" Command="$(Mono) MonoMod.RuntimeDetour.HookGen.exe --private PlayMaker.dll" />
+        <Exec Condition="!Exists('$(TargetDir)MMHOOK_Assembly-CSharp.dll')" WorkingDirectory="@(BuildDir)" Command="$(MonoPathPrefix)$(Mono) MonoMod.RuntimeDetour.HookGen.exe --private Assembly-CSharp.dll" />
+        <Exec Condition="!Exists('$(TargetDir)MMHOOK_Playmaker.dll')" WorkingDirectory="@(BuildDir)" Command="$(MonoPathPrefix)$(Mono) MonoMod.RuntimeDetour.HookGen.exe --private PlayMaker.dll" />
 
         <!-- Rename files so the assembly name is correct and game loads !-->
         <Move SourceFiles="$(TargetDir)MONOMODDED_Assembly-CSharp.dll" DestinationFiles="$(TargetDir)MONOMODDED.dll" />
@@ -76,6 +109,10 @@
             <IncludeAssets>all</IncludeAssets>
         </PackageReference>
 
+        <PackageReference Include="MonoMod.Utils" Version="21.1.11.1">
+            <IncludeAssets>all</IncludeAssets>
+        </PackageReference>
+
         <PackageReference Include="MonoMod.RuntimeDetour" Version="21.1.11.1">
             <IncludeAssets>all</IncludeAssets>
         </PackageReference>
@@ -105,10 +142,10 @@
             <SpecificVersion>False</SpecificVersion>
         </Reference>
         <Reference Include="System, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-            <HintPath>../../../../../usr/lib64/mono/2.0-api/System.dll</HintPath>
+            <HintPath>$(MonoFrameworkDir)/System.dll</HintPath>
         </Reference>
         <Reference Include="System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-            <HintPath>../../../../../usr/lib64/mono/2.0-api/System.Xml.dll</HintPath>
+            <HintPath>$(MonoFrameworkDir)/System.Xml.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
             <HintPath>../Vanilla/UnityEngine.dll</HintPath>
